@@ -9,7 +9,7 @@ app.use(express.json())
 
 //เรียกใช้database
 const database = require('./database');
-
+//ffeee
 
 app.get('/users', async (req, res) => {
     const [rows] = await database.query('SELECT * FROM Users');

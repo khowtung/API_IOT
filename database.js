@@ -1,6 +1,6 @@
 const mysql = require('mysql2/promise');
 
-const db = mysql.createPool({
+const database = mysql.createPool({
     host: 'HOST จาก TiDB',
     port: 4000,
     user: 'USERNAME',
@@ -10,4 +10,4 @@ const db = mysql.createPool({
     connectionLimit: 10
 });
 
-module.exports = db;
+module.exports = database;
