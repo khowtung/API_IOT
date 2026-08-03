@@ -7,20 +7,26 @@ const port = 3000
 app.use(cors())
 app.use(express.json())
 
+//เรียกใช้database
+const database = require('./database');
 
-const users = [
-    { id: 1, housenum: '67/1', name: 'supanat', licenseplate:'ค6767', province: 'ลำพูน',Convoy: 'car'},
-    { id: 2, housenum: '67/1', name: 'supanat', licenseplate:'ห6969', province: 'ลำพูน',Convoy: 'motocycle'},
-    { id: 3, housenum: '67/1', name: 'supanat', licenseplate:'หคต888', province: 'ลำพูน',Convoy: 'motocycle'},
-]
+
+app.get('/users', async (req, res) => {
+    const [rows] = await database.query('SELECT * FROM Users');
+    res.json(rows);
+});
+
+// const users = [
+//     { id: 1, housenum: '67/1', name: 'supanat', licenseplate:'ค6767', province: 'ลำพูน',Convoy: 'car'},
+//     { id: 2, housenum: '67/1', name: 'supanat', licenseplate:'ห6969', province: 'ลำพูน',Convoy: 'motocycle'},
+//     { id: 3, housenum: '67/1', name: 'supanat', licenseplate:'หคต888', province: 'ลำพูน',Convoy: 'motocycle'},
+// ]
+
 //getขอข้อมูลจากdata
 app.get('/', (req, res) => {
     res.send('welcome first API')
 })
 
-app.get('/users', (req, res) => {
-    res.json(users)
-})
 
 app.get('/users/:id', (req, res) => {
     const userid = parseInt(req.params.id)
