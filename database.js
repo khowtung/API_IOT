@@ -5,9 +5,15 @@ const database = mysql.createPool({
     port: 4000,
     user: '3yLVkRkeEWif26A.root',
     password: 'vJU1pykkucYAYnJQ',
-    database: 'smart_village',
+    database: 'sys',
+
     waitForConnections: true,
-    connectionLimit: 10
+    connectionLimit: 10,
+
+    ssl: {
+        minVersion: 'TLSv1.2',
+        rejectUnauthorized: true
+    }
 });
 
 module.exports = database;
