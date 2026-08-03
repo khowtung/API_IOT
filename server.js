@@ -21,7 +21,7 @@ app.get('/', (req, res) => {
     res.send('welcome first API')
 })
 
-
+//เรียกหาuser id
 app.get('/users/:id', async (req, res) => {
     const id = req.params.id
     const [rows] = await database.query(
@@ -37,6 +37,7 @@ app.get('/users/:id', async (req, res) => {
     res.json(rows[0])    
 })
 
+//เรียกหาป้ายทะเบียย
 app.get('/license/:licenseplate', async (req, res) => {
     const plate = req.params.licenseplate
     const [rows] = await database.query(
