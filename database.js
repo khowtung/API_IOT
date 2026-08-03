@@ -5,7 +5,7 @@ const database = mysql.createPool({
     port: 4000,
     user: '3yLVkRkeEWif26A.root',
     password: 'vJU1pykkucYAYnJQ',
-    database: 'sys',
+    database: 'smart_village',
     waitForConnections: true,
     connectionLimit: 10
 });

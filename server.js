@@ -12,8 +12,8 @@ app.use(express.json())
 
 
 app.get('/users', async (req, res) => {
-    const [rows] = await database.query('SELECT * FROM Users');
-    res.json(rows);
+    const [rows] = await database.query('SELECT * FROM Users')
+    res.json(rows)
 });
 
 //getขอข้อมูลจากdata
@@ -25,7 +25,7 @@ app.get('/', (req, res) => {
 app.get('/users/:id', async (req, res) => {
     const id = req.params.id
     const [rows] = await database.query(
-        'SELECT * FROM Users WHERE id = ?'
+        'SELECT * FROM Users WHERE id = ?',
         [id]
     )
 
