@@ -7,6 +7,7 @@ const port = 3000
 app.use(cors())
 app.use(express.json())
 
+
 const users = [
     { id: 1, housenum: '67/1', name: 'supanat', licenseplate:'ค6767', province: 'ลำพูน',Convoy: 'car'},
     { id: 2, housenum: '67/1', name: 'supanat', licenseplate:'ห6969', province: 'ลำพูน',Convoy: 'motocycle'},
