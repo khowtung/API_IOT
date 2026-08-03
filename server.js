@@ -1,26 +1,20 @@
 const express = require('express')
 const cors = require('cors')
+const database = require('./database');
 
 const app = express()
-const port = 3000
+const port = 4000
 
 app.use(cors())
 app.use(express.json())
 
 //เรียกใช้database
-const database = require('./database');
-//ffeee
+
 
 app.get('/users', async (req, res) => {
     const [rows] = await database.query('SELECT * FROM Users');
     res.json(rows);
 });
-
-// const users = [
-//     { id: 1, housenum: '67/1', name: 'supanat', licenseplate:'ค6767', province: 'ลำพูน',Convoy: 'car'},
-//     { id: 2, housenum: '67/1', name: 'supanat', licenseplate:'ห6969', province: 'ลำพูน',Convoy: 'motocycle'},
-//     { id: 3, housenum: '67/1', name: 'supanat', licenseplate:'หคต888', province: 'ลำพูน',Convoy: 'motocycle'},
-// ]
 
 //getขอข้อมูลจากdata
 app.get('/', (req, res) => {
@@ -28,25 +22,37 @@ app.get('/', (req, res) => {
 })
 
 
-app.get('/users/:id', (req, res) => {
-    const userid = parseInt(req.params.id)
-    const user = users.find(u => u.id === userid)
-    if (!user) {
-        res.status(404).json({ message: 'User not found' })
-    }
+app.get('/users/:id', async (req, res) => {
+    const id = req.params.id
+    const [rows] = await database.query(
+        'SELECT * FROM Users WHERE id = ?'
+        [id]
+    )
 
-    res.json(user)
+    if (rows.length === 0) {
+        return res.status(404).json({
+            message: 'User not found'
+        })
+    }
+    res.json(rows[0])    
 })
 
-app.get('/license/:licenseplate', (req, res) => {
-    const userlicense = String(req.params.licenseplate)
-    const user = users.find(u => u.licenseplate ===userlicense)
-    if (!user) {
-        res.status(404).json({ message: 'User not found' })
-    }
+app.get('/license/:licenseplate', async (req, res) => {
+    const plate = req.params.licenseplate
+    const [rows] = await database.query(
+        'SELECT * FROM Vehicles WHERE plate = ?',
+        [plate]
+    )
 
-    res.json(user)
+    if (rows.length === 0) {
+        return res.status(404).json({
+            message: 'Vehicle not found'
+        })
+    }
+    res.json(rows[0])
 })
+
+///////////////////////////////////////////////////////////////////////////////////////////////
 
 //postส่งข้อมูลเข้าdata จะส่งเข้าจากเวปหรือAIก็ได้
 app.post('/api/member', (req, res) => {

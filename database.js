@@ -1,11 +1,11 @@
 const mysql = require('mysql2/promise');
 
 const database = mysql.createPool({
-    host: 'HOST จาก TiDB',
+    host: 'gateway01.ap-southeast-1.prod.aws.tidbcloud.com',
     port: 4000,
-    user: 'USERNAME',
-    password: 'PASSWORD',
-    database: 'smart_village',
+    user: '3yLVkRkeEWif26A.root',
+    password: 'vJU1pykkucYAYnJQ',
+    database: 'sys',
     waitForConnections: true,
     connectionLimit: 10
 });
