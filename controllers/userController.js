@@ -39,7 +39,7 @@ exports.createUser = async (req, res) => {
         if (checkhouse.length > 0) {
             return res.json({
                 success: false,
-                message: "Username already exists"
+                message: "้houseNumber already exists"
             });
         }
 
