@@ -4,6 +4,7 @@ const router = express.Router();
 
 const userController = require("../controllers/userController");
 
+// https://api-node-iot.onrender.com/...........
 // POST   /api/users/createUser
 // GET    /api/users/getUsers
 // GET    /api/users/getUserById/1
