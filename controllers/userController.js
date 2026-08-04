@@ -33,7 +33,7 @@ exports.createUser = async (req, res) => {
         }
 
         const [checkhouse] = await database.query(
-            "SELECT * FROM Users WHERE houseNumber=?"
+            "SELECT * FROM Users WHERE houseNumber=?",
             [houseNumber]
         );
         if (checkhouse.length > 0) {
