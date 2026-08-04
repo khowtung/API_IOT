@@ -1,4 +1,5 @@
 const mysql = require('mysql2/promise');
+const fs = require("fs");
 
 const database = mysql.createPool({
     host: 'gateway01.ap-southeast-1.prod.aws.tidbcloud.com',
@@ -10,10 +11,12 @@ const database = mysql.createPool({
     waitForConnections: true,
     connectionLimit: 10,
 
+
     ssl: {
         minVersion: 'TLSv1.2',
-        rejectUnauthorized: true
+        rejectUnauthorized: true,
     }
+    
 });
 
 module.exports = database;

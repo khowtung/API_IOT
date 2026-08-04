@@ -1,6 +1,10 @@
 const express = require('express')
 const cors = require('cors')
-const database = require('./database');
+
+//เรียกใช้จากโฟเดอร์
+const database = require('./database')
+const authRoutes = require('./routes/auth')
+const userRoutes = require("./routes/users");
 
 const app = express()
 const port = 4000
@@ -8,18 +12,26 @@ const port = 4000
 app.use(cors())
 app.use(express.json())
 
+//นี่คือตัวดึงลงไปที่โฟเดอร์ชื่อroutesและไฟล์userใช้สำหรับ /
+app.use("/api/users", userRoutes);
+//นี่คือตัวดึงลงไปที่โฟเดอร์ชื่อroutesและไฟล์authใช้สำหรับ /loin หรือ register
+app.use("/api/auth", authRoutes)
+
+//getขอข้อมูลจากdataเริ่มต้นนะ
+app.get('/', (req, res) => {
+    res.send('welcome first API')
+})
+
 //เรียกใช้database
 
+//--------------------------------GET---------------------------------------------------//
 
 app.get('/users', async (req, res) => {
     const [rows] = await database.query('SELECT * FROM Users')
     res.json(rows)
 });
 
-//getขอข้อมูลจากdata
-app.get('/', (req, res) => {
-    res.send('welcome first API')
-})
+
 
 //เรียกหาuser id
 app.get('/users/:id', async (req, res) => {
@@ -53,7 +65,7 @@ app.get('/license/:licenseplate', async (req, res) => {
     res.json(rows[0])
 })
 
-///////////////////////////////////////////////////////////////////////////////////////////////
+//--------------------------------POST---------------------------------------------------//
 
 //postส่งข้อมูลเข้าdata จะส่งเข้าจากเวปหรือAIก็ได้
 app.post('/api/member', (req, res) => {
@@ -93,6 +105,10 @@ app.post('/api/car-entry', (req, res) => {
     })
 
 })
+
+//--------------------------------PUT---------------------------------------------------//
+
+//--------------------------------DELETE---------------------------------------------------//
 
 app.listen(port, () => {
     // console.log(`server is running... ${port}`)
