@@ -8,9 +8,7 @@ const database = require("../database");
 exports.createUser = async (req, res) => {
 
     try {
-
         const {
-
             houseNumber,
             ownerName,
             username,
@@ -19,31 +17,33 @@ exports.createUser = async (req, res) => {
             registerDate,
             memberStartDate,
             memberExpireDate
-
         } = req.body;
 
         // ตรวจ username ซ้ำ
-        const [check] = await database.query(
-
+        const [checkusername] = await database.query(
             "SELECT * FROM Users WHERE username=?",
-
             [username]
-
         );
 
-        if (check.length > 0) {
-
+        if (checkusername.length > 0) {
             return res.json({
-
                 success: false,
                 message: "Username already exists"
-
             });
+        }
 
+        const [checkhouse] = await database.query(
+            "SELECT * FROM Users WHERE houseNumber=?"
+            [houseNumber]
+        );
+        if (checkhouse.length > 0) {
+            return res.json({
+                success: false,
+                message: "Username already exists"
+            });
         }
 
         await database.query(
-
             `INSERT INTO Users
             (
                 houseNumber,
@@ -59,7 +59,6 @@ exports.createUser = async (req, res) => {
             VALUES(?,?,?,?,?,?,?,?)`,
 
             [
-
                 houseNumber,
                 ownerName,
                 username,
@@ -68,33 +67,20 @@ exports.createUser = async (req, res) => {
                 registerDate,
                 memberStartDate,
                 memberExpireDate
-
             ]
-
         );
 
         res.json({
-
             success: true,
             message: "Create User Success"
-
         });
-
-    }
-
-    catch (err) {
-
+    } catch (err) {
         console.log(err);
-
         res.status(500).json({
-
             success: false,
             message: "Server Error"
-
         });
-
     }
-
 }
 
 // =======================
