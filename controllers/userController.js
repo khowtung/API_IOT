@@ -1,7 +1,7 @@
 const database = require("../database");
 
 // =======================
-// POST /api/users
+// POST   /api/users/createUser
 // เพิ่มลูกบ้าน
 // =======================
 
@@ -32,6 +32,7 @@ exports.createUser = async (req, res) => {
             });
         }
 
+        // 2. ตรวจบ้านเลขที่ซ้ำ
         const [checkhouse] = await database.query(
             "SELECT * FROM Users WHERE houseNumber=?",
             [houseNumber]
@@ -43,9 +44,18 @@ exports.createUser = async (req, res) => {
             });
         }
 
+        // ค้นหา ID ที่มีค่ามากที่สุดในตารางตอนนี้
+        const [maxIdResult] = await database.query(
+            "SELECT MAX(id) AS maxId FROM Users"
+        );
+
+        // กำหนด ID ใหม่: ถ้าตารางว่างให้เริ่มที่ 1 แต่ถ้ามีข้อมูลให้เอาค่ามากสุด + 1
+        const nextId = maxIdResult[0].maxId === null ? 1 : maxIdResult[0].maxId + 1;
+
         await database.query(
             `INSERT INTO Users
             (
+                id,
                 houseNumber,
                 ownerName,
                 username,
@@ -56,9 +66,10 @@ exports.createUser = async (req, res) => {
                 memberExpireDate
             )
 
-            VALUES(?,?,?,?,?,?,?,?)`,
+            VALUES(?,?,?,?,?,?,?,?,?)`,
 
             [
+                nextId,
                 houseNumber,
                 ownerName,
                 username,
@@ -72,7 +83,8 @@ exports.createUser = async (req, res) => {
 
         res.json({
             success: true,
-            message: "Create User Success"
+            message: "Create User Success",
+            newId: nextId
         });
     } catch (err) {
         console.log(err);
@@ -84,62 +96,40 @@ exports.createUser = async (req, res) => {
 }
 
 // =======================
-// GET /api/users
+// GET    /api/users/getUsers
 // =======================
 
 exports.getUsers = async (req, res) => {
 
     try {
-
         const [rows] = await database.query(
-
             "SELECT * FROM Users"
-
         );
-
         res.json(rows);
-
-    }
-
-    catch (err) {
-
+    } catch (err) {
         console.log(err);
-
         res.status(500).json({
-
             success: false
-
         });
-
     }
-
 }
 
 // =======================
-// GET /api/users/:id
+// GET    /api/users/getUserById/1
 // =======================
 
 exports.getUserById = async (req, res) => {
 
     try {
-
         const id = req.params.id;
-
         const [rows] = await database.query(
-
             "SELECT * FROM Users WHERE id=?",
-
             [id]
-
         );
-
         if (rows.length == 0) {
-
             return res.status(404).json({
-
                 success: false,
                 message: "User not found"
-
             });
 
         }
@@ -163,7 +153,7 @@ exports.getUserById = async (req, res) => {
 }
 
 // =======================
-// PUT /api/users/:id
+// PUT    /api/users/updateUser/1
 // =======================
 
 exports.updateUser = async (req, res) => {
@@ -242,7 +232,7 @@ exports.updateUser = async (req, res) => {
 }
 
 // =======================
-// DELETE /api/users/:id
+// DELETE /api/users/deleteUser/1
 // =======================
 
 exports.deleteUser = async (req, res) => {
