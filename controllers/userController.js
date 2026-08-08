@@ -272,3 +272,112 @@ exports.deleteUser = async (req, res) => {
     }
 
 }
+
+// ===================================================
+// GET USER WITH VEHICLES
+// ===================================================
+
+exports.getUserWithVehicles = async (req, res) => {
+
+    try {
+
+        const id = req.params.id;
+
+        // หา User
+        const [users] = await database.query(
+
+            `SELECT
+                id,
+                houseNumber,
+                ownerName,
+                role,
+                registerDate,
+                memberStartDate,
+                memberExpireDate
+
+            FROM Users
+
+            WHERE id = ?`,
+
+            [id]
+
+        );
+
+        // ถ้าไม่พบ User
+        if (users.length === 0) {
+
+            return res.status(404).json({
+
+                success: false,
+                message: "User not found"
+
+            });
+
+        }
+
+        // หารถของ User คนนี้
+        const [vehicles] = await database.query(
+
+            `SELECT
+                id,
+                plate,
+                province,
+                type,
+                registerDate
+
+            FROM Vehicles
+
+            WHERE user_id = ?`,
+
+            [id]
+
+        );
+
+        // รวมข้อมูล User + Vehicles
+        const user = {
+
+            id: users[0].id,
+
+            houseNumber: users[0].houseNumber,
+
+            ownerName: users[0].ownerName,
+
+            role: users[0].role,
+
+            registerDate: users[0].registerDate,
+
+            memberStartDate: users[0].memberStartDate,
+
+            memberExpireDate: users[0].memberExpireDate,
+
+            vehicles: vehicles
+
+        };
+
+        res.json({
+
+            success: true,
+
+            message: "Get User With Vehicles Success",
+
+            data: user
+
+        });
+
+    }
+
+    catch (err) {
+
+        console.log(err);
+
+        res.status(500).json({
+
+            success: false,
+
+            message: "Server Error"
+
+        });
+
+    }
+
+};
