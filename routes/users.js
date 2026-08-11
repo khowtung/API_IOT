@@ -5,24 +5,32 @@ const router = express.Router();
 const userController = require("../controllers/userController");
 
 // https://api-node-iot.onrender.com/...........
+
 // POST   /api/users/createUser
-// //--{
-//     "id": 1,
-//     "houseNumber": "1",
-//     "ownerName": "สมหมาย",
-//     "username": "adaaaqqqqq",
-//     "password": "1234",
-//     "role": "resident",
-//     "registerDate": "15/10/2026",
-//     "memberStartDate": "15/10/2026",
-//     "memberExpireDate": "15/11/2026"
+// {
+//   "houseNumber": "67/1",
+//   "ownerName": "supanat",
+//   "username": "supanat01",
+//   "password": "123456",
+//   "role": "member",
+//   "registerDate": "2026-08-11",
+//   "memberStartDate": "2026-08-11",
+//   "memberExpireDate": "2027-08-11"
 // }
-// --//
+// ถ้าได้จะส่งtrueสร้างยูสใหม่พร้อมสร้างไอดี
+// ชื่อยูสเซอร์ไม่ซ้ำ บ้านเลขที่ไม่ซ้ำ
+
+// PUT    /api/users/updateUser/1
+// เลือกอัพเดตจากไอดีbodyเหมือนpost ตอบ true/false
+
+// DELETE /api/users/deleteUser/1
+// เลือกลบจากไอดีได้เลย ตอบ true/false
+
 // GET    /api/users/getUsers
 // GET    /api/users/getUserById/1
 // GET    /api/users/getUserWithVehicles/1
-// PUT    /api/users/updateUser/1
-// DELETE /api/users/deleteUser/1
+// อันนี้คือหารถทั้งหมดของบ้านเลขที่นั้นจาก id
+
 router.post(
     "/createUser",
     userController.createUser

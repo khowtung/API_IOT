@@ -7,17 +7,22 @@ const vehicleController = require("../controllers/vehicleController");
 // https://api-node-iot.onrender.com/...........
 // POST   /api/vehicles/createVehicle
 //--{
-//     "user_id":17, ใส่ไอดีประจำตัวของลูกบ้าน
+//     "user_id":17, ใส่ไอดีประจำตัวของลูกบ้านที่มันสร้างเองอะ
 //     "plate":"กข1277",
 //     "province":"ลำพูน",
 //     "type":"Car",
 //     "registerDate":"05/08/2026"
 // }
 // --//
+
 // GET    /api/vehicles/getVehicles
 // GET    /api/vehicles/getVehicleById/1
+
 // PUT    /api/vehicles/updateVehicle/1
+// เลือกอัพเดตจากไอดีbodyเหมือนpost ตอบ true/false
+
 // DELETE /api/vehicles/deleteVehicle/1
+// เลือกลบจากไอดีได้เลย ตอบ true/false
 
 // =============================
 // CREATE
