@@ -19,7 +19,7 @@ const authController = require("../controllers/authController");
 // }
 // ตอบกลับด้วยtrue/false
 
-//POST  /api//auth/login
+//POST  /api/auth/login
 // {
 //   "username": "supanat01",
 //   "password": "123456"
