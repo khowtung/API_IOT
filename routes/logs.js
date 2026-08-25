@@ -22,7 +22,7 @@ const logController = require("../controllers/logController");
 // }
 
 // GET /api/logs/getLogsById/:id
-// เอาไว้ดูเวลาการเข้าออกของรถแต่ละคันจากไอดีของรถ
+// เอาไว้ดูเวลาการเข้าออกของรถแต่ละคันจากไอดีของรถได้ตามข้างล่างเดะ
 // {
 //     "success": true,
 //     "data": [
