@@ -295,3 +295,61 @@ exports.getLogsById = async (req, res) => {
         });
     }
 };
+
+
+// ===================================================
+// GET ALL VEHICLE LOGS
+// ===================================================
+
+exports.getLogs = async (req, res) => {
+
+    try {
+
+        const [rows] = await database.query(`
+
+            SELECT
+                 vl.vehicle_id,
+                v.plate,
+                v.type,
+                vl.camera_in,
+                vl.time_in,
+                vl.camera_out,
+                vl.time_out
+            FROM Vehicle_Logs vl
+
+            JOIN Vehicles v
+                ON vl.vehicle_id = v.id
+
+            JOIN Users u
+                ON v.user_id = u.id
+
+            ORDER BY vl.time_in DESC
+
+        `);
+
+
+        res.json({
+
+            success: true,
+
+            data: rows
+
+        });
+
+    }
+
+    catch (error) {
+
+        console.log(error);
+
+        res.status(500).json({
+
+            success: false,
+
+            message: "Server Error"
+
+        });
+
+    }
+
+};

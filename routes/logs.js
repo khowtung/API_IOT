@@ -37,6 +37,8 @@ const logController = require("../controllers/logController");
 //         }
 //     ]
 // }
+// GET /api/logs/getLogs
+// เอาไว้ดูเวลาการเข้าออกของรถทุกคันในประเทศศุภณัฐ
 
 router.post(
     "/carEntry",
@@ -47,6 +49,11 @@ router.post(
 router.get(
     "/getLogsById/:id",
     logController.getLogsById
+);
+
+router.get(
+    "/getLogs",
+    logController.getLogs
 );
 
 module.exports = router;
