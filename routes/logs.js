@@ -21,8 +21,22 @@ const logController = require("../controllers/logController");
 //     "time": "2026-08-25 15:30:00"
 // }
 
-// GET /api/logs/getLogs
-// เอาไว้ดูเวลาการเข้าออกของรถแต่ละคันทั้งหมด
+// GET /api/logs/getLogsById/:id
+// เอาไว้ดูเวลาการเข้าออกของรถแต่ละคันจากไอดีของรถ
+// {
+//     "success": true,
+//     "data": [
+//         {
+//             "vehicle_id": 1,
+//             "plate": "กข1234",
+//             "type": "Car",
+//             "camera_in": "Gate1",
+//             "time_in": "2026-08-25T08:30:00.000Z",
+//             "camera_out": "Gate2",
+//             "time_out": "2026-08-25T12:00:00.000Z"
+//         }
+//     ]
+// }
 
 router.post(
     "/carEntry",
@@ -31,8 +45,8 @@ router.post(
 
 
 router.get(
-    "/getLogs",
-    logController.getLogs
+    "/getLogsById/:id",
+    logController.getLogsById
 );
 
 module.exports = router;

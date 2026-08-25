@@ -257,65 +257,41 @@ exports.carEntry = async (req, res) => {
 
 
 // ===================================================
-// GET ALL VEHICLE LOGS
+// GET ById VEHICLE LOGS
 // ===================================================
 
-exports.getLogs = async (req, res) => {
-
+exports.getLogsById = async (req, res) => {
     try {
+        const id = req.params.id;
 
         const [rows] = await database.query(`
-
             SELECT
-                vl.id,
                 vl.vehicle_id,
                 v.plate,
                 v.type,
-                u.id AS user_id,
-                u.houseNumber,
-                u.ownerName,
-
                 vl.camera_in,
                 vl.time_in,
-
                 vl.camera_out,
                 vl.time_out
-
             FROM Vehicle_Logs vl
-
             JOIN Vehicles v
                 ON vl.vehicle_id = v.id
-
             JOIN Users u
                 ON v.user_id = u.id
-
+            WHERE vl.vehicle_id = ?
             ORDER BY vl.time_in DESC
-
-        `);
-
+        `, [id]);
 
         res.json({
-
             success: true,
-
             data: rows
-
         });
 
-    }
-
-    catch (error) {
-
+    } catch (error) {
         console.log(error);
-
         res.status(500).json({
-
             success: false,
-
             message: "Server Error"
-
         });
-
     }
-
 };
