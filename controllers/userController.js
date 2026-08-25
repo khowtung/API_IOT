@@ -273,17 +273,22 @@ exports.deleteUser = async (req, res) => {
 
 }
 
+
 // ===================================================
-// GET USER WITH VEHICLES
+// GET USER + VEHICLES + TIME IN/OUT
 // ===================================================
 
 exports.getUserWithVehicles = async (req, res) => {
 
     try {
 
-        const id = req.params.id;
+        const userId = req.params.id;
 
-        // หา User
+
+        // ============================================
+        // 1. ค้นหา User
+        // ============================================
+
         const [users] = await database.query(
 
             `SELECT
@@ -295,27 +300,37 @@ exports.getUserWithVehicles = async (req, res) => {
                 memberStartDate,
                 memberExpireDate
 
-            FROM Users
+             FROM Users
 
-            WHERE id = ?`,
+             WHERE id = ?`,
 
-            [id]
+            [userId]
 
         );
 
-        // ถ้าไม่พบ User
+
+        // ไม่พบ User
+
         if (users.length === 0) {
 
             return res.status(404).json({
 
                 success: false,
+
                 message: "User not found"
 
             });
 
         }
 
-        // หารถของ User คนนี้
+
+        const user = users[0];
+
+
+        // ============================================
+        // 2. ค้นหา Vehicles ของ User
+        // ============================================
+
         const [vehicles] = await database.query(
 
             `SELECT
@@ -325,50 +340,101 @@ exports.getUserWithVehicles = async (req, res) => {
                 type,
                 registerDate
 
-            FROM Vehicles
+             FROM Vehicles
 
-            WHERE user_id = ?`,
+             WHERE user_id = ?`,
 
-            [id]
+            [userId]
 
         );
 
-        // รวมข้อมูล User + Vehicles
-        const user = {
 
-            id: users[0].id,
+        // ============================================
+        // 3. หาประวัติ IN / OUT ของรถแต่ละคัน
+        // ============================================
 
-            houseNumber: users[0].houseNumber,
+        for (const vehicle of vehicles) {
 
-            ownerName: users[0].ownerName,
+            const [logs] = await database.query(
 
-            role: users[0].role,
+                `SELECT
+                    id,
+                    camera_in,
+                    time_in,
+                    camera_out,
+                    time_out
 
-            registerDate: users[0].registerDate,
+                 FROM Vehicle_Logs
 
-            memberStartDate: users[0].memberStartDate,
+                 WHERE vehicle_id = ?
 
-            memberExpireDate: users[0].memberExpireDate,
+                 ORDER BY time_in DESC`,
+
+                [vehicle.id]
+
+            );
+
+
+            // แปลงชื่อข้อมูลให้ตรงกับที่หน้าเว็บต้องการ
+
+            vehicle.timeInOut = logs.map(log => ({
+
+                in: log.time_in,
+
+                out: log.time_out
+
+            }));
+
+
+            // ไม่จำเป็นต้องส่ง id ของ log
+            // และ camera สามารถเอาออกได้ถ้าหน้าเว็บไม่ใช้
+
+        }
+
+
+        // ============================================
+        // 4. รวมข้อมูล
+        // ============================================
+
+        const data = {
+
+            id: user.id,
+
+            houseNumber: user.houseNumber,
+
+            ownerName: user.ownerName,
+
+            role: user.role,
+
+            registerDate: user.registerDate,
+
+            memberStartDate: user.memberStartDate,
+
+            memberExpireDate: user.memberExpireDate,
 
             vehicles: vehicles
 
         };
 
+
+        // ============================================
+        // 5. ส่ง Response
+        // ============================================
+
         res.json({
 
             success: true,
 
-            message: "Get User With Vehicles Success",
-
-            data: user
+            data: data
 
         });
 
     }
 
-    catch (err) {
 
-        console.log(err);
+    catch (error) {
+
+        console.log(error);
 
         res.status(500).json({
 
