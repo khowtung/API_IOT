@@ -1,99 +1,128 @@
 const database = require("../database");
+const bcrypt = require("bcrypt");
 
 // =======================
-// POST   /api/users/createUser
+// POST /api/users/createUser
 // เพิ่มลูกบ้าน
 // =======================
 
 exports.createUser = async (req, res) => {
 
     try {
+
         const {
             houseNumber,
             ownerName,
-            username,
-            password,
             role,
             registerDate,
             memberStartDate,
             memberExpireDate
         } = req.body;
 
-        // ตรวจ username ซ้ำ
-        const [checkusername] = await database.query(
-            "SELECT * FROM Users WHERE username=?",
-            [username]
-        );
 
-        if (checkusername.length > 0) {
-            return res.json({
-                success: false,
-                message: "Username already exists"
-            });
-        }
+        // ==========================================
+        // ตรวจบ้านเลขที่ซ้ำ
+        // ==========================================
 
-        // 2. ตรวจบ้านเลขที่ซ้ำ
         const [checkhouse] = await database.query(
-            "SELECT * FROM Users WHERE houseNumber=?",
+
+            "SELECT * FROM Users WHERE houseNumber = ?",
+
             [houseNumber]
+
         );
+
+
         if (checkhouse.length > 0) {
-            return res.json({
+
+            return res.status(409).json({
+
                 success: false,
-                message: "้houseNumber already exists"
+
+                message: "houseNumber already exists"
+
             });
+
         }
 
-        // ค้นหา ID ที่มีค่ามากที่สุดในตารางตอนนี้
-        const [maxIdResult] = await database.query(
-            "SELECT MAX(id) AS maxId FROM Users"
-        );
 
-        // กำหนด ID ใหม่: ถ้าตารางว่างให้เริ่มที่ 1 แต่ถ้ามีข้อมูลให้เอาค่ามากสุด + 1
-        const nextId = maxIdResult[0].maxId === null ? 1 : maxIdResult[0].maxId + 1;
+        // ==========================================
+        // เพิ่ม User
+        // id ไม่ต้องใส่
+        // เพราะ Database AUTO_INCREMENT ให้เอง
+        // ==========================================
 
-        await database.query(
+        const [result] = await database.query(
+
             `INSERT INTO Users
             (
-                id,
                 houseNumber,
                 ownerName,
-                username,
-                password,
                 role,
                 registerDate,
                 memberStartDate,
                 memberExpireDate
             )
-
-            VALUES(?,?,?,?,?,?,?,?,?)`,
-
+            VALUES (?, ?, ?, ?, ?, ?)`,
+            
             [
-                nextId,
                 houseNumber,
                 ownerName,
-                username,
-                password,
                 role,
                 registerDate,
                 memberStartDate,
                 memberExpireDate
             ]
+
         );
 
-        res.json({
+
+        // Database สร้าง ID ให้เอง
+
+        const newId = result.insertId;
+
+
+        // ==========================================
+        // Response
+        // ==========================================
+
+        return res.status(201).json({
+
             success: true,
+
             message: "Create User Success",
-            newId: nextId
+
+            newId: newId
+
         });
-    } catch (err) {
-        console.log(err);
-        res.status(500).json({
-            success: false,
-            message: "Server Error"
-        });
+
     }
-}
+
+
+    catch (error) {
+
+        console.error("=================================");
+
+        console.error("CREATE USER ERROR");
+
+        console.error(error);
+
+        console.error("=================================");
+
+
+        return res.status(500).json({
+
+            success: false,
+
+            message: "Server Error",
+
+            error: error.message
+
+        });
+
+    }
+
+};
 
 // =======================
 // GET    /api/users/getUsers
@@ -167,8 +196,6 @@ exports.updateUser = async (req, res) => {
 
             houseNumber,
             ownerName,
-            username,
-            password,
             role,
             registerDate,
             memberStartDate,
@@ -184,8 +211,6 @@ exports.updateUser = async (req, res) => {
 
             houseNumber=?,
             ownerName=?,
-            username=?,
-            password=?,
             role=?,
             registerDate=?,
             memberStartDate=?,
@@ -197,8 +222,6 @@ exports.updateUser = async (req, res) => {
 
                 houseNumber,
                 ownerName,
-                username,
-                password,
                 role,
                 registerDate,
                 memberStartDate,

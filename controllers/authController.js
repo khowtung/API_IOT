@@ -1,108 +1,424 @@
-//เรียกใช้โฟเดอร์จากชื่อเพื่อส่งข้อมูลเข้า
 const database = require("../database");
+const bcrypt = require("bcrypt");
+const jwt = require("jsonwebtoken");
 
-//register
-exports.register = async(req,res)=>{
-    try{
+
+// ==========================================
+// REGISTER
+// POST /api/auth/register
+// ==========================================
+
+exports.register = async (req, res) => {
+
+    try {
+
         const {
-            houseNumber,
-            ownerName,
+            user_id,
             username,
-            password,
-            role,
-            registerDate,
-            memberStartDate,
-            memberExpireDate
+            password
         } = req.body;
 
-        // ตรวจสอบ username ซ้ำ
-        const [checkUser] = await database.query(
-            "SELECT * FROM Users WHERE username=?",
-            [username]
-        );
 
-        if(checkUser.length>0){
-            return res.json({
-                success:false,
-                message:"Username already exists"
+        if (!user_id || !username || !password) {
+
+            return res.status(400).json({
+
+                success: false,
+
+                message:
+                    "user_id, username and password are required"
+
             });
+
         }
 
-        // เพิ่มข้อมูล
-        await database.query(
-            `INSERT INTO Users
-            (
-                houseNumber,
-                ownerName,
-                username,
-                password,
-                role,
-                registerDate,
-                memberStartDate,
-                memberExpireDate
-            )
-            VALUES(?,?,?,?,?,?,?,?)`,
-            [
-                houseNumber,
-                ownerName,
-                username,
-                password,
-                role,
-                registerDate,
-                memberStartDate,
-                memberExpireDate
-            ]
+
+        // ตรวจว่า User มีอยู่จริงไหม
+
+        const [users] = await database.query(
+
+            `SELECT id
+             FROM Users
+             WHERE id = ?`,
+
+            [user_id]
+
         );
-        res.json({
-            success:true,
-            message:"Register Success"
+
+
+        if (users.length === 0) {
+
+            return res.status(404).json({
+
+                success: false,
+
+                message: "User not found"
+
+            });
+
+        }
+
+
+        // ตรวจ username ซ้ำ
+
+        const [accounts] = await database.query(
+
+            `SELECT id
+             FROM Accounts
+             WHERE username = ?`,
+
+            [username]
+
+        );
+
+
+        if (accounts.length > 0) {
+
+            return res.status(409).json({
+
+                success: false,
+
+                message: "Username already exists"
+
+            });
+
+        }
+
+
+        // Hash password
+
+        const hashedPassword =
+            await bcrypt.hash(password, 10);
+
+
+        // สร้าง Account
+
+        const [result] = await database.query(
+
+            `INSERT INTO Accounts
+            (
+                user_id,
+                username,
+                password
+            )
+            VALUES (?, ?, ?)`,
+
+            [
+                user_id,
+                username,
+                hashedPassword
+            ]
+
+        );
+
+
+        return res.status(201).json({
+
+            success: true,
+
+            message: "Account created successfully",
+
+            data: {
+
+                id: result.insertId,
+
+                user_id: user_id,
+
+                username: username
+
+            }
+
         });
 
-    } catch(error){
-        console.log(error);
-        res.status(500).json({
-            success:false,
-            message:"Server Error"
-        });
     }
-}
 
-//login
-exports.login = async(req,res)=>{
-    try{
+    catch (error) {
+
+        console.error(error);
+
+        return res.status(500).json({
+
+            success: false,
+
+            message: "Internal server error"
+
+        });
+
+    }
+
+};
+
+
+// ==========================================
+// LOGIN
+// POST /api/auth/login
+// ==========================================
+
+exports.login = async (req, res) => {
+
+    try {
+
         const {
             username,
             password
-        } 
-        = req.body;
+        } = req.body;
+
+
+        // ตรวจข้อมูล
+
+        if (!username || !password) {
+
+            return res.status(400).json({
+
+                success: false,
+                message: "Username and password are required"
+
+            });
+
+        }
+
+
+        // ค้นหา Account
 
         const [rows] = await database.query(
-            "SELECT * FROM Users WHERE username=?",
+
+            `SELECT
+                id,
+                user_id,
+                username,
+                password
+
+             FROM Accounts
+
+             WHERE username = ?`,
+
             [username]
+
         );
 
-        if(rows.length==0){
-            return res.json({
-                success:false
-            });
-        }
 
-        if(rows[0].password!==password){
-            return res.json({
-                success:false
+        if (rows.length === 0) {
+
+            return res.status(401).json({
+
+                success: false
+
             });
 
         }
-        res.json({
-            success:true
-        });
 
-    } catch(error){
-        console.log(error);
-        res.status(500).json({
-            success:false
+
+        const account = rows[0];
+
+
+        // ตรวจ Password
+
+        const isPasswordValid =
+            await bcrypt.compare(
+                password,
+                account.password
+            );
+
+
+        if (!isPasswordValid) {
+
+            return res.status(401).json({
+
+                success: false
+
+            });
+
+        }
+
+
+        // สร้าง JWT
+
+        const token = jwt.sign(
+
+            {
+                userId: account.user_id,
+                username: account.username
+            },
+
+            process.env.JWT_SECRET,
+
+            {
+                expiresIn: "1h"
+            }
+
+        );
+
+
+        console.log(
+            `[API] Login success: ${account.username}`
+        );
+
+
+        return res.json({
+
+            success: true,
+
+            token: token,
+
+            id: account.user_id
+
         });
 
     }
 
-}
+    catch (error) {
+
+        console.error(
+            "[API Error] login:",
+            error
+        );
+
+        return res.status(500).json({
+
+            success: false
+
+        });
+
+    }
+
+};
+
+// ==========================================
+// PUT /api/auth/updateAccount/:id
+// แก้ Username / Password
+// ==========================================
+
+exports.updateAccount = async (req, res) => {
+
+    try {
+
+        const id = req.params.id;
+
+        const {
+            username,
+            password
+        } = req.body;
+
+
+        // ==========================================
+        // ตรวจว่ามี Account หรือไม่
+        // ==========================================
+
+        const [account] = await database.query(
+
+            `SELECT id
+             FROM Accounts
+             WHERE id = ?`,
+
+            [id]
+
+        );
+
+
+        if (account.length === 0) {
+
+            return res.status(404).json({
+
+                success: false,
+
+                message: "Account not found"
+
+            });
+
+        }
+
+
+        // ==========================================
+        // ตรวจ Username ซ้ำ
+        // ==========================================
+
+        const [duplicate] = await database.query(
+
+            `SELECT id
+             FROM Accounts
+             WHERE username = ?
+             AND id <> ?`,
+
+            [
+                username,
+                id
+            ]
+
+        );
+
+
+        if (duplicate.length > 0) {
+
+            return res.status(409).json({
+
+                success: false,
+
+                message: "Username already exists"
+
+            });
+
+        }
+
+
+        // ==========================================
+        // Hash Password
+        // ==========================================
+
+        const hashedPassword = await bcrypt.hash(
+            password,
+            10
+        );
+
+
+        // ==========================================
+        // Update Account
+        // ==========================================
+
+        await database.query(
+
+            `UPDATE Accounts
+
+             SET
+                username = ?,
+                password = ?
+
+             WHERE id = ?`,
+
+            [
+                username,
+                hashedPassword,
+                id
+            ]
+
+        );
+
+
+        return res.json({
+
+            success: true,
+
+            message: "Update Account Success"
+
+        });
+
+    }
+
+
+    catch (error) {
+
+        console.error(
+            "[API Error] updateAccount:",
+            error
+        );
+
+        return res.status(500).json({
+
+            success: false,
+
+            message: "Server Error"
+
+        });
+
+    }
+
+};

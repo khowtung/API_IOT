@@ -10,8 +10,6 @@ const userController = require("../controllers/userController");
 // {
 //   "houseNumber": "67/1",
 //   "ownerName": "supanat",
-//   "username": "supanat01",
-//   "password": "123456",
 //   "role": "member",
 //   "registerDate": "2026-08-11",
 //   "memberStartDate": "2026-08-11",

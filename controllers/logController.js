@@ -308,7 +308,8 @@ exports.getLogs = async (req, res) => {
         const [rows] = await database.query(`
 
             SELECT
-                 vl.vehicle_id,
+                v.user_id,
+                vl.vehicle_id,
                 v.plate,
                 v.type,
                 vl.camera_in,

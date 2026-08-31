@@ -26,7 +26,20 @@ const authController = require("../controllers/authController");
 // }
 // ตอบกลับด้วยtrue/false
 
-router.post("/register",authController.register);   
-router.post("/login",authController.login);
+router.post(
+    "/register",
+    authController.register
+);
+
+
+router.post(
+    "/login",
+    authController.login
+);
+
+router.put(
+    "/updateAccount/:id",
+    authController.updateAccount
+);
 
 module.exports = router;
