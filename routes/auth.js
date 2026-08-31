@@ -8,14 +8,9 @@ const authController = require("../controllers/authController");
 // https://api-node-iot.onrender.com/...........
 //POST   /api/auth/register
 // {
-//   "houseNumber": "67/1",
-//   "ownerName": "supanat",
-//   "username": "supanat01",
-//   "password": "123456",
-//   "role": "member",
-//   "registerDate": "2026-08-11",
-//   "memberStartDate": "2026-08-11",
-//   "memberExpireDate": "2027-08-11"
+//     "user_id": 5,
+//     "username": "user01",
+//     "password": "123456"
 // }
 // ตอบกลับด้วยtrue/false
 
@@ -25,6 +20,11 @@ const authController = require("../controllers/authController");
 //   "password": "123456"
 // }
 // ตอบกลับด้วยtrue/false
+
+// PUT /api/auth/updateAccount/1
+// ตรง /1 ต้องเป็น Accounts.id ไม่ใช่ Users.id แต่ปกตแล้วก่อันเดียวกันเพราะ1บ้านมีแค่1users
+// บอดี้เดียวกับlogin
+
 
 router.post(
     "/register",

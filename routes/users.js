@@ -8,12 +8,12 @@ const userController = require("../controllers/userController");
 
 // POST   /api/users/createUser
 // {
-//   "houseNumber": "67/1",
-//   "ownerName": "supanat",
-//   "role": "member",
-//   "registerDate": "2026-08-11",
-//   "memberStartDate": "2026-08-11",
-//   "memberExpireDate": "2027-08-11"
+//     "houseNumber": "158/1",
+//     "ownerName": "สมหมาย ดีใจ",
+//     "role": "resident",
+//     "registerDate": "15/10/2026",
+//     "memberStartDate": "15/10/2026",
+//     "memberExpireDate": "15/11/2026"
 // }
 // ถ้าได้จะส่งtrueสร้างยูสใหม่พร้อมสร้างไอดี
 // ชื่อยูสเซอร์ไม่ซ้ำ บ้านเลขที่ไม่ซ้ำ
