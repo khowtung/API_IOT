@@ -6,254 +6,254 @@ const database = require("../database");
 // รับข้อมูลจาก AI
 // ===================================================
 
-exports.carEntry = async (req, res) => {
+// exports.carEntry = async (req, res) => {
 
-    try {
+//     try {
 
-        const {
+//         const {
 
-            licenseplate,
-            province,
-            camera,
-            time
+//             licenseplate,
+//             province,
+//             camera,
+//             time
 
-        } = req.body;
+//         } = req.body;
 
 
-        // ===================================================
-        // ตรวจสอบข้อมูล
-        // ===================================================
+//         // ===================================================
+//         // ตรวจสอบข้อมูล
+//         // ===================================================
 
-        if (
-            !licenseplate ||
-            !province ||
-            !camera ||
-            !time
-        ) {
+//         if (
+//             !licenseplate ||
+//             !province ||
+//             !camera ||
+//             !time
+//         ) {
 
-            return res.status(400).json({
+//             return res.status(400).json({
 
-                success: false,
+//                 success: false,
 
-                message: "Please provide licenseplate, province, camera and time"
+//                 message: "Please provide licenseplate, province, camera and time"
 
-            });
+//             });
 
-        }
+//         }
 
 
-        // ===================================================
-        // ค้นหารถจากทะเบียน
-        // ===================================================
+//         // ===================================================
+//         // ค้นหารถจากทะเบียน
+//         // ===================================================
 
-        const [vehicles] = await database.query(
+//         const [vehicles] = await database.query(
 
-            `SELECT
-                id,
-                user_id,
-                plate,
-                province,
-                type
+//             `SELECT
+//                 id,
+//                 user_id,
+//                 plate,
+//                 province,
+//                 type
 
-            FROM Vehicles
+//             FROM Vehicles
 
-            WHERE plate = ?
-            AND province = ?`,
+//             WHERE plate = ?
+//             AND province = ?`,
 
-            [
+//             [
 
-                licenseplate,
-                province
+//                 licenseplate,
+//                 province
 
-            ]
+//             ]
 
-        );
+//         );
 
 
-        // ===================================================
-        // ไม่พบรถ
-        // ===================================================
+//         // ===================================================
+//         // ไม่พบรถ
+//         // ===================================================
 
-        if (vehicles.length === 0) {
+//         if (vehicles.length === 0) {
 
-            return res.status(404).json({
+//             return res.status(404).json({
 
-                success: false,
+//                 success: false,
 
-                message: "Vehicle not found"
+//                 message: "Vehicle not found"
 
-            });
+//             });
 
-        }
+//         }
 
 
-        const vehicle = vehicles[0];
+//         const vehicle = vehicles[0];
 
 
-        // ===================================================
-        // ตรวจว่ารถคันนี้มีรายการเข้า
-        // แต่ยังไม่มีเวลาออกหรือไม่
-        // ===================================================
+//         // ===================================================
+//         // ตรวจว่ารถคันนี้มีรายการเข้า
+//         // แต่ยังไม่มีเวลาออกหรือไม่
+//         // ===================================================
 
-        const [openLogs] = await database.query(
+//         const [openLogs] = await database.query(
 
-            `SELECT
-                id,
-                vehicle_id,
-                camera_in,
-                time_in
+//             `SELECT
+//                 id,
+//                 vehicle_id,
+//                 camera_in,
+//                 time_in
 
-            FROM Vehicle_Logs
+//             FROM Vehicle_Logs
 
-            WHERE vehicle_id = ?
+//             WHERE vehicle_id = ?
 
-            AND time_out IS NULL
+//             AND time_out IS NULL
 
-            ORDER BY time_in DESC
+//             ORDER BY time_in DESC
 
-            LIMIT 1`,
+//             LIMIT 1`,
 
-            [
+//             [
 
-                vehicle.id
+//                 vehicle.id
 
-            ]
+//             ]
 
-        );
+//         );
 
 
-        // ===================================================
-        // CASE 1
-        // ยังไม่มีรายการเข้า -> ถือว่าเป็น IN
-        // ===================================================
+//         // ===================================================
+//         // CASE 1
+//         // ยังไม่มีรายการเข้า -> ถือว่าเป็น IN
+//         // ===================================================
 
-        if (openLogs.length === 0) {
+//         if (openLogs.length === 0) {
 
-            const [result] = await database.query(
+//             const [result] = await database.query(
 
-                `INSERT INTO Vehicle_Logs
-                (
-                    vehicle_id,
-                    camera_in,
-                    time_in
-                )
+//                 `INSERT INTO Vehicle_Logs
+//                 (
+//                     vehicle_id,
+//                     camera_in,
+//                     time_in
+//                 )
 
-                VALUES (?, ?, ?)`,
+//                 VALUES (?, ?, ?)`,
 
-                [
+//                 [
 
-                    vehicle.id,
-                    camera,
-                    time
+//                     vehicle.id,
+//                     camera,
+//                     time
 
-                ]
+//                 ]
 
-            );
+//             );
 
 
-            return res.json({
+//             return res.json({
 
-                success: true,
+//                 success: true,
 
-                message: "Car Entry Success",
+//                 message: "Car Entry Success",
 
-                data: {
+//                 data: {
 
-                    logId: result.insertId,
+//                     logId: result.insertId,
 
-                    vehicleId: vehicle.id,
+//                     vehicleId: vehicle.id,
 
-                    licenseplate: vehicle.plate,
+//                     licenseplate: vehicle.plate,
 
-                    province: vehicle.province,
+//                     province: vehicle.province,
 
-                    cameraIn: camera,
+//                     cameraIn: camera,
 
-                    timeIn: time
+//                     timeIn: time
 
-                }
+//                 }
 
-            });
+//             });
 
-        }
+//         }
 
 
-        // ===================================================
-        // CASE 2
-        // มีรายการเข้าแล้ว -> ถือว่าเป็น OUT
-        // ===================================================
+//         // ===================================================
+//         // CASE 2
+//         // มีรายการเข้าแล้ว -> ถือว่าเป็น OUT
+//         // ===================================================
 
-        const log = openLogs[0];
+//         const log = openLogs[0];
 
 
-        await database.query(
+//         await database.query(
 
-            `UPDATE Vehicle_Logs
+//             `UPDATE Vehicle_Logs
 
-            SET
-                camera_out = ?,
-                time_out = ?
+//             SET
+//                 camera_out = ?,
+//                 time_out = ?
 
-            WHERE id = ?`,
+//             WHERE id = ?`,
 
-            [
+//             [
 
-                camera,
-                time,
-                log.id
+//                 camera,
+//                 time,
+//                 log.id
 
-            ]
+//             ]
 
-        );
+//         );
 
 
-        return res.json({
+//         return res.json({
 
-            success: true,
+//             success: true,
 
-            message: "Car Exit Success",
+//             message: "Car Exit Success",
 
-            data: {
+//             data: {
 
-                logId: log.id,
+//                 logId: log.id,
 
-                vehicleId: vehicle.id,
+//                 vehicleId: vehicle.id,
 
-                licenseplate: vehicle.plate,
+//                 licenseplate: vehicle.plate,
 
-                province: vehicle.province,
+//                 province: vehicle.province,
 
-                cameraIn: log.camera_in,
+//                 cameraIn: log.camera_in,
 
-                timeIn: log.time_in,
+//                 timeIn: log.time_in,
 
-                cameraOut: camera,
+//                 cameraOut: camera,
 
-                timeOut: time
+//                 timeOut: time
 
-            }
+//             }
 
-        });
+//         });
 
-    }
+//     }
 
 
-    catch (error) {
+//     catch (error) {
 
-        console.log(error);
+//         console.log(error);
 
 
-        res.status(500).json({
+//         res.status(500).json({
 
-            success: false,
+//             success: false,
 
-            message: "Server Error"
+//             message: "Server Error"
 
-        });
+//         });
 
-    }
+//     }
 
-};
+// };
 
 
 // ===================================================
@@ -266,12 +266,12 @@ exports.getLogsById = async (req, res) => {
 
         const [rows] = await database.query(`
             SELECT
+                v.user_id,
                 vl.vehicle_id,
                 v.plate,
+                v.province,
                 v.type,
-                vl.camera_in,
                 vl.time_in,
-                vl.camera_out,
                 vl.time_out
             FROM Vehicle_Logs vl
             JOIN Vehicles v
@@ -311,10 +311,9 @@ exports.getLogs = async (req, res) => {
                 v.user_id,
                 vl.vehicle_id,
                 v.plate,
+                v.province,
                 v.type,
-                vl.camera_in,
                 vl.time_in,
-                vl.camera_out,
                 vl.time_out
             FROM Vehicle_Logs vl
 

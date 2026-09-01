@@ -5,7 +5,7 @@ const router = express.Router();
 const logController = require("../controllers/logController");
 
 // https://api-node-iot.onrender.com/...........
-// POST /api/logs/carEntry
+// POST /api/logs/carEntry *ตัวนี้ไม่ได้ใช้แล้วเปลี่ยนไปเป็นaccess*
 // ครั้งแรกการส่งเป็นการเข้า
 // {
 //     "licenseplate": "กข1234",
@@ -40,10 +40,10 @@ const logController = require("../controllers/logController");
 // GET /api/logs/getLogs
 // เอาไว้ดูเวลาการเข้าออกของรถทุกคันในประเทศศุภณัฐ
 
-router.post(
-    "/carEntry",
-    logController.carEntry
-);
+// router.post(
+//     "/carEntry",
+//     logController.carEntry
+// );
 
 
 router.get(
