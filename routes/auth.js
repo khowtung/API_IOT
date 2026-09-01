@@ -3,6 +3,7 @@ const router = express.Router();
 
 //เรียกใช้จากโฟเดอร์ตามชื่อ
 const authController = require("../controllers/authController");
+const authMiddleware = require("../middleware/authMiddleware");
 
 
 // https://api-node-iot.onrender.com/...........
@@ -40,6 +41,12 @@ router.post(
 router.put(
     "/updateAccount/:id",
     authController.updateAccount
+);
+
+router.get(
+    "/me",
+    authMiddleware.verifyToken,
+    authController.getMe
 );
 
 module.exports = router;

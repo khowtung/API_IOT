@@ -1,6 +1,7 @@
 const database = require("../database");
 
 
+
 // ===================================================
 // CAR ENTRY
 // รับข้อมูลจาก AI
@@ -261,39 +262,86 @@ const database = require("../database");
 // ===================================================
 
 exports.getLogsById = async (req, res) => {
+
+    let connection;
+
     try {
+
         const id = req.params.id;
 
-        const [rows] = await database.query(`
+        connection = await database.getConnection();
+
+        // ตั้ง timezone ของ TiDB connection นี้เป็นไทย
+        await connection.query(
+            "SET time_zone = '+07:00'"
+        );
+
+        const [rows] = await connection.query(`
+
             SELECT
                 v.user_id,
                 vl.vehicle_id,
                 v.plate,
                 v.province,
                 v.type,
-                vl.time_in,
-                vl.time_out
+
+                DATE_FORMAT(
+                    vl.time_in,
+                    '%d/%m/%Y %H:%i:%s'
+                ) AS time_in,
+
+                DATE_FORMAT(
+                    vl.time_out,
+                    '%d/%m/%Y %H:%i:%s'
+                ) AS time_out
+
             FROM Vehicle_Logs vl
+
             JOIN Vehicles v
                 ON vl.vehicle_id = v.id
+
             JOIN Users u
                 ON v.user_id = u.id
+
             WHERE vl.vehicle_id = ?
+
             ORDER BY vl.time_in DESC
+
         `, [id]);
 
+
         res.json({
+
             success: true,
+
             data: rows
+
         });
 
-    } catch (error) {
-        console.log(error);
-        res.status(500).json({
-            success: false,
-            message: "Server Error"
-        });
     }
+
+    catch (error) {
+
+        console.log(error);
+
+        res.status(500).json({
+
+            success: false,
+
+            message: "Server Error"
+
+        });
+
+    }
+
+    finally {
+
+        if (connection) {
+            connection.release();
+        }
+
+    }
+
 };
 
 
@@ -303,9 +351,18 @@ exports.getLogsById = async (req, res) => {
 
 exports.getLogs = async (req, res) => {
 
+    let connection;
+
     try {
 
-        const [rows] = await database.query(`
+        connection = await database.getConnection();
+
+        // ตั้ง timezone ของ TiDB connection นี้เป็นไทย
+        await connection.query(
+            "SET time_zone = '+07:00'"
+        );
+
+        const [rows] = await connection.query(`
 
             SELECT
                 v.user_id,
@@ -313,8 +370,17 @@ exports.getLogs = async (req, res) => {
                 v.plate,
                 v.province,
                 v.type,
-                vl.time_in,
-                vl.time_out
+
+                DATE_FORMAT(
+                    vl.time_in,
+                    '%d/%m/%Y %H:%i:%s'
+                ) AS time_in,
+
+                DATE_FORMAT(
+                    vl.time_out,
+                    '%d/%m/%Y %H:%i:%s'
+                ) AS time_out
+
             FROM Vehicle_Logs vl
 
             JOIN Vehicles v
@@ -349,6 +415,14 @@ exports.getLogs = async (req, res) => {
             message: "Server Error"
 
         });
+
+    }
+
+    finally {
+
+        if (connection) {
+            connection.release();
+        }
 
     }
 

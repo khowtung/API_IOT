@@ -422,3 +422,95 @@ exports.updateAccount = async (req, res) => {
     }
 
 };
+
+// ==================================================
+// GET /api/auth/me
+// ตรวจสอบ Token และดึงข้อมูล User ปัจจุบัน
+// ==================================================
+
+exports.getMe = async (req, res) => {
+
+    try {
+
+        // userId มาจาก JWT
+        const userId = req.user.userId;
+
+
+        // ==================================================
+        // ดึงข้อมูล User + Account
+        // ==================================================
+
+        const [rows] = await database.query(
+
+            `SELECT
+                u.id,
+                u.houseNumber,
+                u.ownerName,
+                u.role,
+                u.registerDate,
+                u.memberStartDate,
+                u.memberExpireDate,
+                a.username
+
+             FROM Users u
+
+             JOIN Accounts a
+                ON u.id = a.user_id
+
+             WHERE u.id = ?`,
+
+            [userId]
+
+        );
+
+
+        // ==================================================
+        // ไม่พบ User
+        // ==================================================
+
+        if (rows.length === 0) {
+
+            return res.status(404).json({
+
+                success: false,
+
+                message: "User not found"
+
+            });
+
+        }
+
+
+        // ==================================================
+        // ส่งข้อมูลกลับ
+        // ==================================================
+
+        return res.json({
+
+            success: true,
+
+            user: rows[0]
+
+        });
+
+    }
+
+
+    catch (error) {
+
+        console.error(
+            "[API Error] getMe:",
+            error
+        );
+
+        return res.status(500).json({
+
+            success: false,
+
+            message: "Server Error"
+
+        });
+
+    }
+
+};

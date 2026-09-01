@@ -11,7 +11,8 @@ const database = mysql.createPool({
     JWT_SECRET: process.env.JWT_SECRET,
     waitForConnections: true,
     connectionLimit: 10,
-
+    timezone: '+07:00',
+    dateStrings: true,
 
     ssl: {
         minVersion: 'TLSv1.2',
