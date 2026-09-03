@@ -9,6 +9,7 @@ const userRoutes = require("./routes/users");
 const vehicleRoutes = require("./routes/vehicles");
 const logRoutes = require("./routes/logs");
 const accessRoutes = require("./routes/access");
+const visitorRoutes = require("./routes/visitor");
 
 const app = express();
 const port = 4000;
@@ -16,6 +17,8 @@ const port = 4000;
 app.use(cors());
 app.use(express.json());
 
+//นี่คือตัวดึงลงไปที่โฟเดอร์ชื่อroutesและไฟล์visitorใช้สำหรับvisitor /
+app.use("/api/access",visitorRoutes);
 //นี่คือตัวดึงลงไปที่โฟเดอร์ชื่อroutesและไฟล์accessใช้สำหรับai /
 app.use("/api/access", accessRoutes);
 //นี่คือตัวดึงลงไปที่โฟเดอร์ชื่อroutesและไฟล์logsใช้สำหรับ /
