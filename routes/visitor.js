@@ -2,21 +2,25 @@ const express = require("express");
 
 const router = express.Router();
 
-const visitorController =
-    require("../controllers/visitorController");
+const visitorController = require("../controllers/visitorController");
 
 
-// ==================================================
-// Barcode Visitor
-// ==================================================
+// ========================================
+// Visitor เข้า / ออก
+// ========================================
 
 router.post(
-    "/barcode",
-    visitorController.barcodeAccess
+    "/visitor",
+    visitorController.visitorAccess
 );
 
+
+// ========================================
+// ดูประวัติ Visitor
+// ========================================
+
 router.get(
-    "/barcode/logs",
+    "/visitor/logs",
     visitorController.getVisitorLogs
 );
 

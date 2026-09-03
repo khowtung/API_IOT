@@ -1,278 +1,256 @@
 const database = require("../database");
 
-
 // ==================================================
-// POST /api/access/barcode
-// Barcode Visitor เข้า / ออก
+// POST /api/access/visitor
+// Barcode ส่งเข้ามา
 // ==================================================
-
-exports.barcodeAccess = async (req, res) => {
+exports.visitorAccess = async (req, res) => {
 
     try {
 
-        const {
-            barcode,
-            type
-        } = req.body;
-
+        const { barcode } = req.body;
 
         // ==========================================
         // ตรวจข้อมูล
         // ==========================================
-
         if (!barcode) {
-
             return res.status(400).json({
-
                 success: false,
                 allowed: false,
-                message: "Barcode is required"
-
+                message: "barcode is required"
             });
-
         }
 
+        console.log("Barcode :", barcode);
 
         // ==========================================
-        // ตรวจว่า Barcode กำลังอยู่ในหมู่บ้านไหม
+        // 1. ตรวจว่า Barcode นี้มีคนใช้อยู่แล้วหรือไม่
         // ==========================================
+        const [usedBarcode] = await database.query(
+            `SELECT id
+             FROM Visitors
+             WHERE barcode = ?
+             LIMIT 1`,
+            [barcode]
+        );
 
-        const [visitors] = await database.query(
+        // ==========================================
+        // ถ้า Barcode นี้กำลังใช้งานอยู่
+        // ==========================================
+        if (usedBarcode.length > 0) {
 
+            // ไม่ return ทันที
+            // เพราะอาจเป็น Visitor ที่กำลังออก
+            // เราจะตรวจ status ต่อด้านล่าง
+        }
+
+        // ==========================================
+        // 2. ตรวจ Visitor ที่กำลังจะออก
+        // ==========================================
+        const [exitVisitors] = await database.query(
             `SELECT
                 id,
                 barcode,
-                type,
-                time_in
-
+                licenseplate,
+                province
              FROM Visitors
-
-             WHERE barcode = ?
-
+             WHERE status = 'WAITING_EXIT_BARCODE'
+             AND barcode = ?
              LIMIT 1`,
-
             [barcode]
-
         );
 
+        // ==========================================
+        // พบ Visitor ที่กำลังออก
+        // ==========================================
+        if (exitVisitors.length > 0) {
 
-        // ==================================================
-        // ไม่พบ Barcode
-        // = Visitor กำลังเข้า
-        // ==================================================
+            const visitor = exitVisitors[0];
 
-        if (visitors.length === 0) {
-
-            await database.query(
-
-                `INSERT INTO Visitors
-                (
-                    barcode,
-                    type,
-                    time_in
-                )
-
-                VALUES (?, ?, CURRENT_TIMESTAMP)`,
-
+            // ==========================================
+            // หา Visitor Log ที่ยังไม่ได้ออก
+            // ==========================================
+            const [logs] = await database.query(
+                `SELECT id
+                 FROM Visitor_Logs
+                 WHERE barcode = ?
+                 AND licenseplate = ?
+                 AND province = ?
+                 AND time_out IS NULL
+                 ORDER BY time_in DESC
+                 LIMIT 1`,
                 [
-                    barcode,
-                    type || "Visitor"
+                    visitor.barcode,
+                    visitor.licenseplate,
+                    visitor.province
                 ]
-
             );
 
+            // ==========================================
+            // ไม่พบ Log
+            // ==========================================
+            if (logs.length === 0) {
 
-            // เก็บประวัติการเข้า
+                return res.status(400).json({
+                    success: false,
+                    allowed: false,
+                    message: "Visitor log not found"
+                });
+            }
 
+            // ==========================================
+            // บันทึกเวลาออก
+            // ==========================================
             await database.query(
-
-                `INSERT INTO Visitor_Logs
-                (
-                    barcode,
-                    type,
-                    time_in
-                )
-
-                VALUES (?, ?, CURRENT_TIMESTAMP)`,
-
+                `UPDATE Visitor_Logs
+                 SET time_out = CURRENT_TIMESTAMP
+                 WHERE id = ?`,
                 [
-                    barcode,
-                    type || "Visitor"
+                    logs[0].id
                 ]
-
             );
 
+            // ==========================================
+            // ลบ Visitor หลังออกสำเร็จ
+            // ==========================================
+            await database.query(
+                `DELETE FROM Visitors
+                 WHERE id = ?`,
+                [
+                    visitor.id
+                ]
+            );
 
+            // ==========================================
+            // อนุญาตให้ออก
+            // ==========================================
             return res.json({
-
                 success: true,
-
                 allowed: true,
-
-                action: "IN",
-
-                message: "Visitor Entry Success"
-
+                action: "OUT",
+                message: "Visitor Exit Success"
             });
-
         }
 
+        // ==========================================
+        // 3. หา Visitor ที่กำลังรอ Barcode ตอนเข้า
+        // ==========================================
+        const [visitors] = await database.query(
+            `SELECT
+                id,
+                licenseplate,
+                province
+             FROM Visitors
+             WHERE status = 'WAITING_BARCODE'
+             AND barcode IS NULL
+             ORDER BY id DESC
+             LIMIT 1`
+        );
 
-        // ==================================================
-        // พบ Barcode
-        // = Visitor กำลังออก
-        // ==================================================
+        // ==========================================
+        // ไม่พบ Visitor ที่รอ Barcode
+        // ==========================================
+        if (visitors.length === 0) {
+
+            return res.status(400).json({
+                success: false,
+                allowed: false,
+                message: "Barcode does not match visitor"
+            });
+        }
 
         const visitor = visitors[0];
 
-
-        // หา Log ล่าสุดที่ยังไม่มีเวลาออก
-
-        const [logs] = await database.query(
-
-            `SELECT
-                id
-
-             FROM Visitor_Logs
-
-             WHERE barcode = ?
-
-             AND time_out IS NULL
-
-             ORDER BY time_in DESC
-
-             LIMIT 1`,
-
-            [barcode]
-
-        );
-
-
-        if (logs.length > 0) {
-
-            await database.query(
-
-                `UPDATE Visitor_Logs
-
-                 SET time_out = CURRENT_TIMESTAMP
-
-                 WHERE id = ?`,
-
-                [logs[0].id]
-
-            );
-
-        }
-
-
-        // ==================================================
-        // ลบ Barcode ออกจาก Active Visitor
-        // ==================================================
-
+        // ==========================================
+        // 4. บันทึกเวลาเข้า + Barcode
+        // ==========================================
         await database.query(
-
-            `DELETE FROM Visitors
-
+            `UPDATE Visitors
+             SET barcode = ?,
+                 time_in = CURRENT_TIMESTAMP,
+                 status = 'INSIDE'
              WHERE id = ?`,
-
-            [visitor.id]
-
+            [
+                barcode,
+                visitor.id
+            ]
         );
 
+        // ==========================================
+        // 5. เก็บประวัติลง Visitor_Logs
+        // ==========================================
+        await database.query(
+            `INSERT INTO Visitor_Logs
+             (
+                 barcode,
+                 licenseplate,
+                 province,
+                 time_in
+             )
+             VALUES (?, ?, ?, CURRENT_TIMESTAMP)`,
+            [
+                barcode,
+                visitor.licenseplate,
+                visitor.province
+            ]
+        );
 
+        // ==========================================
+        // 6. อนุญาตให้เข้า
+        // ==========================================
         return res.json({
-
             success: true,
-
             allowed: true,
-
-            action: "OUT",
-
-            message: "Visitor Exit Success"
-
+            action: "IN",
+            message: "Visitor Entry Success"
         });
 
-    }
+    } catch (error) {
 
-
-    catch (error) {
-
-        console.error(
-            "[API Error] barcodeAccess:",
-            error
-        );
-
+        console.error("VISITOR ACCESS ERROR");
+        console.error(error);
 
         return res.status(500).json({
-
             success: false,
-
             allowed: false,
-
             message: "Server Error"
-
         });
-
     }
-
 };
 
 
-// ==================================================
-// GET /api/access/barcode/logs
+// ========================================
 // ดูประวัติ Visitor
-// ==================================================
-
+// GET /api/access/visitor/logs
+// ========================================
 exports.getVisitorLogs = async (req, res) => {
 
     try {
 
-        const [rows] = await database.query(`
-
-            SELECT
+        const [rows] = await database.query(
+            `SELECT
                 id,
                 barcode,
-                type,
+                licenseplate,
+                province,
+                DATE_FORMAT(time_in, '%d/%m/%Y %H:%i:%s') AS time_in,
+                DATE_FORMAT(time_out, '%d/%m/%Y %H:%i:%s') AS time_out
+             FROM Visitor_Logs
+             ORDER BY id DESC`
+        );
 
-                DATE_FORMAT(
-                    time_in,
-                    '%d/%m/%Y %H:%i:%s'
-                ) AS time_in,
-
-                DATE_FORMAT(
-                    time_out,
-                    '%d/%m/%Y %H:%i:%s'
-                ) AS time_out
-
-            FROM Visitor_Logs
-
-            ORDER BY time_in DESC
-
-        `);
-
-
-        res.json({
-
+        return res.json({
             success: true,
-
             data: rows
-
         });
 
-    }
-
-    catch (error) {
+    } catch (error) {
 
         console.error(error);
 
-        res.status(500).json({
-
+        return res.status(500).json({
             success: false,
-
-            message: "Server Error"
-
+            message: "Server error"
         });
-
     }
-
 };
