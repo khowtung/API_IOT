@@ -8,24 +8,62 @@ const userController = require("../controllers/userController");
 
 // POST   /api/users/createUser
 // {
-//     "houseNumber": "158/1",
-//     "ownerName": "สมหมาย ดีใจ",
-//     "role": "resident",
-//     "registerDate": "15/10/2026",
-//     "memberStartDate": "15/10/2026",
-//     "memberExpireDate": "15/11/2026"
+//     "houseNumber": "101",
+//     "ownerName": "สมชาย ใจดี",
+//     "registerDate": "03/09/2026",
+//     "memberStartDate": "03/09/2026",
+//     "memberExpireDate": "03/09/2027",
+//     "role": "resident"
 // }
-// ถ้าได้จะส่งtrueสร้างยูสใหม่พร้อมสร้างไอดี
+// Response
+// {
+//     "success": true,
+//     "message": "User created successfully",
+//     "id": 1
+// }
+// ถ้าได้จะส่งtrueสร้างยูสใหม่พร้อมสร้างไอดีใหม่
 // ชื่อยูสเซอร์ไม่ซ้ำ บ้านเลขที่ไม่ซ้ำ
 
+
 // PUT    /api/users/updateUser/1
-// เลือกอัพเดตจากไอดีbodyเหมือนpost ตอบ true/false
+// body
+// {
+//     "houseNumber": "102", สมมมุติอัพเดตบ้านเลขที่
+//     "ownerName": "สมชาย ใจดี",
+//     "registerDate": "03/09/2026",
+//     "memberStartDate": "03/09/2026",
+//     "memberExpireDate": "03/09/2028",
+//     "role": "resident"
+// }
+// Response
+// {
+//     "success": true,
+//     "message": "User updated successfully"
+// }
 
 // DELETE /api/users/deleteUser/1
 // เลือกลบจากไอดีได้เลย ตอบ true/false
 
 // GET    /api/users/getUsers
+// Response
+// {
+//     "success": true,
+//     "data": [
+//         {
+//             "id": 1,
+//             "houseNumber": "101",
+//             "ownerName": "สมชาย ใจดี",
+//             "registerDate": "03/09/2026",
+//             "memberStartDate": "03/09/2026",
+//             "memberExpireDate": "03/09/2027",
+//             "role": "resident"
+//         }
+//     ]
+// }
 // GET    /api/users/getUserById/1
+// เหมือนfetปกติเลยแต่แค่เพิ่มidเข้าไปเพื่ค้นหาได้
+// ==========================================================================
+// ไม่ได้ใช้
 // GET    /api/users/getUserWithVehicles/1
 // อันนี้คือหารถทั้งหมดของบ้านเลขที่นั้นจาก id
 
