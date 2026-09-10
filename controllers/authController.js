@@ -284,15 +284,15 @@ exports.login = async (req, res) => {
 };
 
 // ==========================================
-// PUT /api/auth/updateAccount/:id
-// แก้ Username / Password
+// PUT /api/auth/updateAccount/:user_id
+// แก้ Username / Password โดยอิงจาก Users.id
 // ==========================================
 
 exports.updateAccount = async (req, res) => {
-
     try {
 
-        const id = req.params.id;
+        // user_id มาจาก URL
+        const userId = req.params.user_id;
 
         const {
             username,
@@ -301,62 +301,80 @@ exports.updateAccount = async (req, res) => {
 
 
         // ==========================================
-        // ตรวจว่ามี Account หรือไม่
+        // ตรวจข้อมูล
         // ==========================================
 
-        const [account] = await database.query(
+        if (!username || !password) {
+            return res.status(400).json({
+                success: false,
+                message: "Username and password are required"
+            });
+        }
 
+
+        // ==========================================
+        // ตรวจว่า User มีอยู่จริงหรือไม่
+        // ==========================================
+
+        const [users] = await database.query(
             `SELECT id
-             FROM Accounts
+             FROM Users
              WHERE id = ?`,
-
-            [id]
-
+            [userId]
         );
 
 
-        if (account.length === 0) {
-
+        if (users.length === 0) {
             return res.status(404).json({
-
                 success: false,
-
-                message: "Account not found"
-
+                message: "User not found"
             });
+        }
 
+
+        // ==========================================
+        // ตรวจว่า Account ของ User นี้มีอยู่หรือไม่
+        // ใช้ user_id ไม่ใช่ Accounts.id
+        // ==========================================
+
+        const [accounts] = await database.query(
+            `SELECT id, user_id
+             FROM Accounts
+             WHERE user_id = ?`,
+            [userId]
+        );
+
+
+        if (accounts.length === 0) {
+            return res.status(404).json({
+                success: false,
+                message: "Account not found"
+            });
         }
 
 
         // ==========================================
         // ตรวจ Username ซ้ำ
+        // แต่ต้องไม่ตรวจเจอ Account ของตัวเอง
         // ==========================================
 
         const [duplicate] = await database.query(
-
             `SELECT id
              FROM Accounts
              WHERE username = ?
-             AND id <> ?`,
-
+             AND user_id <> ?`,
             [
                 username,
-                id
+                userId
             ]
-
         );
 
 
         if (duplicate.length > 0) {
-
             return res.status(409).json({
-
                 success: false,
-
                 message: "Username already exists"
-
             });
-
         }
 
 
@@ -364,41 +382,37 @@ exports.updateAccount = async (req, res) => {
         // Hash Password
         // ==========================================
 
-        const hashedPassword = await bcrypt.hash(
-            password,
-            10
-        );
+        const hashedPassword =
+            await bcrypt.hash(password, 10);
 
 
         // ==========================================
         // Update Account
+        // ใช้ user_id เป็นตัวอ้างอิง
         // ==========================================
 
         await database.query(
-
             `UPDATE Accounts
-
              SET
                 username = ?,
                 password = ?
-
              WHERE user_id = ?`,
-
             [
                 username,
                 hashedPassword,
-                id
+                userId
             ]
-
         );
 
 
+        // ==========================================
+        // Response
+        // ==========================================
+
         return res.json({
-
             success: true,
-
-            message: "Update Account Success"
-
+            message: "Update Account Success",
+            user_id: Number(userId)
         });
 
     }
@@ -412,15 +426,10 @@ exports.updateAccount = async (req, res) => {
         );
 
         return res.status(500).json({
-
             success: false,
-
             message: "Server Error"
-
         });
-
     }
-
 };
 
 // ==================================================
