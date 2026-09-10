@@ -254,3 +254,40 @@ exports.getVisitorLogs = async (req, res) => {
         });
     }
 };
+
+
+// ==========================================
+// ดึงข้อมูล Visitor ทั้งหมด
+// ==========================================
+
+exports.getVisitors = async (req, res) => {
+    try {
+
+        const [rows] = await database.query(
+            `SELECT
+                id,
+                barcode,
+                licenseplate,
+                province,
+                time_in,
+                status
+             FROM Visitors
+             ORDER BY id DESC`
+        );
+
+        return res.json({
+            success: true,
+            data: rows
+        });
+
+    } catch (error) {
+
+        console.error("[API Error] getVisitors:", error);
+
+        return res.status(500).json({
+            success: false,
+            message: "Server Error",
+            error: error.message
+        });
+    }
+};

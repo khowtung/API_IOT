@@ -47,7 +47,21 @@ const visitorController = require("../controllers/visitorController");
 //         }
 //     ]
 // }
-
+// GET /api/visitor
+// Response
+// {
+//     "success": true,
+//     "data": [
+//         {
+//             "id": 60001,
+//             "barcode": "1509966506326",
+//             "licenseplate": "กข1235",
+//             "province": "ลำพูน",
+//             "time_in": "2026-09-10 05:37:01",
+//             "status": "INSIDE"
+//         }}
+//     ]
+// }
 
 
 
@@ -69,6 +83,15 @@ router.post(
 router.get(
     "/visitor/logs",
     visitorController.getVisitorLogs
+);
+
+
+// ==========================================
+// GET Visitor ทั้งหมด
+// ==========================================
+router.get( 
+    "/",
+    visitorController.getVisitors
 );
 
 
