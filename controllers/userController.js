@@ -199,7 +199,8 @@ exports.updateUser = async (req, res) => {
             role,
             registerDate,
             memberStartDate,
-            memberExpireDate
+            memberExpireDate,
+            Telegram_ID
 
         } = req.body;
 
@@ -214,7 +215,8 @@ exports.updateUser = async (req, res) => {
             role=?,
             registerDate=?,
             memberStartDate=?,
-            memberExpireDate=?
+            memberExpireDate=?,
+            Telegram_ID=?
 
             WHERE id=?`,
 
@@ -226,6 +228,7 @@ exports.updateUser = async (req, res) => {
                 registerDate,
                 memberStartDate,
                 memberExpireDate,
+                Telegram_ID,
                 id
 
             ]
