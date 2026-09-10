@@ -34,7 +34,7 @@ const authMiddleware = require("../middleware/authMiddleware");
 //     "id": 1
 // }
 
-// PUT /api/logs/getLogs
+// PUT /api/auth/updateAccount/1
 // ฺBody
 // {
 //     "username": "somchai01",
@@ -45,7 +45,7 @@ const authMiddleware = require("../middleware/authMiddleware");
 //     "success": true,
 //     "message": "Account updated successfully"
 // }
-// ตรง /1 ต้องเป็น Accounts.id ไม่ใช่ Users.id แต่ปกตแล้วก่อันเดียวกันเพราะ1บ้านมีแค่1users
+// ตรง /1 ต้องเป็น Users.id แต่ปกตแล้วก่อันเดียวกันเพราะ1บ้านมีแค่1users
 
 
 
@@ -61,7 +61,7 @@ router.post(
 );
 
 router.put(
-    "/updateAccount/:id",
+    "/updateAccount/:user_id",
     authController.updateAccount
 );
 
