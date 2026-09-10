@@ -34,7 +34,7 @@ const authMiddleware = require("../middleware/authMiddleware");
 //     "id": 1
 // }
 
-// PUT /api/auth/updateAccount/1
+// PUT /api/logs/getLogs
 // ฺBody
 // {
 //     "username": "somchai01",

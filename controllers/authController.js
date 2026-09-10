@@ -382,7 +382,7 @@ exports.updateAccount = async (req, res) => {
                 username = ?,
                 password = ?
 
-             WHERE id = ?`,
+             WHERE user_id = ?`,
 
             [
                 username,
