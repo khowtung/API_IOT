@@ -1,5 +1,7 @@
 const database = require("../database");
 
+// *มอส*
+
 // ==================================================
 // POST /api/access/vehicle
 // AI + ESP32 ส่งทะเบียนเข้ามา

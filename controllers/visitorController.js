@@ -1,8 +1,11 @@
 const database = require("../database");
 
+// *ไอริน* + *เกล*
+
 // ==================================================
 // POST /api/access/visitor
 // Barcode ส่งเข้ามา
+// รองรับ Grab + แขกลูกบ้าน
 // ==================================================
 exports.visitorAccess = async (req, res) => {
 
@@ -10,10 +13,12 @@ exports.visitorAccess = async (req, res) => {
 
         const { barcode } = req.body;
 
+
         // ==========================================
         // ตรวจข้อมูล
         // ==========================================
         if (!barcode) {
+
             return res.status(400).json({
                 success: false,
                 allowed: false,
@@ -21,32 +26,17 @@ exports.visitorAccess = async (req, res) => {
             });
         }
 
+
         console.log("Barcode :", barcode);
 
-        // ==========================================
-        // 1. ตรวจว่า Barcode นี้มีคนใช้อยู่แล้วหรือไม่
-        // ==========================================
-        const [usedBarcode] = await database.query(
-            `SELECT id
-             FROM Visitors
-             WHERE barcode = ?
-             LIMIT 1`,
-            [barcode]
-        );
 
-        // ==========================================
-        // ถ้า Barcode นี้กำลังใช้งานอยู่
-        // ==========================================
-        if (usedBarcode.length > 0) {
-
-            // ไม่ return ทันที
-            // เพราะอาจเป็น Visitor ที่กำลังออก
-            // เราจะตรวจ status ต่อด้านล่าง
-        }
-
-        // ==========================================
-        // 2. ตรวจ Visitor ที่กำลังจะออก
-        // ==========================================
+        // ==================================================
+        // 1. ตรวจ Visitor ที่กำลังจะออกก่อน
+        //
+        // สำคัญ:
+        // Barcode ของแขกสามารถหมดอายุระหว่างอยู่ข้างในได้
+        // แต่ยังต้องอนุญาตให้ออก
+        // ==================================================
         const [exitVisitors] = await database.query(
             `SELECT
                 id,
@@ -60,18 +50,21 @@ exports.visitorAccess = async (req, res) => {
             [barcode]
         );
 
-        // ==========================================
+
+        // ==================================================
         // พบ Visitor ที่กำลังออก
-        // ==========================================
+        // ==================================================
         if (exitVisitors.length > 0) {
 
             const visitor = exitVisitors[0];
+
 
             // ==========================================
             // หา Visitor Log ที่ยังไม่ได้ออก
             // ==========================================
             const [logs] = await database.query(
-                `SELECT id
+                `SELECT
+                    id
                  FROM Visitor_Logs
                  WHERE barcode = ?
                  AND licenseplate = ?
@@ -86,6 +79,7 @@ exports.visitorAccess = async (req, res) => {
                 ]
             );
 
+
             // ==========================================
             // ไม่พบ Log
             // ==========================================
@@ -98,6 +92,7 @@ exports.visitorAccess = async (req, res) => {
                 });
             }
 
+
             // ==========================================
             // บันทึกเวลาออก
             // ==========================================
@@ -105,36 +100,134 @@ exports.visitorAccess = async (req, res) => {
                 `UPDATE Visitor_Logs
                  SET time_out = CURRENT_TIMESTAMP
                  WHERE id = ?`,
-                [
-                    logs[0].id
-                ]
+                [logs[0].id]
             );
 
+
             // ==========================================
-            // ลบ Visitor หลังออกสำเร็จ
+            // ถ้าเป็น Barcode ของลูกบ้าน
+            // เปลี่ยนเป็น USED
+            //
+            // ถ้าเป็น Grab จะไม่มีข้อมูลใน
+            // Visitor_Barcodes
+            // ==========================================
+            await database.query(
+                `UPDATE Visitor_Barcodes
+                 SET status = 'USED'
+                 WHERE barcode = ?`,
+                [barcode]
+            );
+
+
+            // ==========================================
+            // ลบ Visitor runtime
             // ==========================================
             await database.query(
                 `DELETE FROM Visitors
                  WHERE id = ?`,
-                [
-                    visitor.id
-                ]
+                [visitor.id]
             );
+
 
             // ==========================================
             // อนุญาตให้ออก
             // ==========================================
             return res.json({
+
                 success: true,
+
                 allowed: true,
+
                 action: "OUT",
+
                 message: "Visitor Exit Success"
+
             });
         }
 
-        // ==========================================
+
+        // ==================================================
+        // 2. ตรวจ Barcode ที่ลูกบ้านสร้างไว้
+        // ==================================================
+        const [savedBarcodes] = await database.query(
+            `SELECT
+                id,
+                user_id,
+                houseNumber,
+                barcode,
+                expireDate,
+                status
+             FROM Visitor_Barcodes
+             WHERE barcode = ?
+             LIMIT 1`,
+            [barcode]
+        );
+
+
+        // ==================================================
+        // ถ้า Barcode เคยถูกสร้างโดยลูกบ้าน
+        // ==================================================
+        if (savedBarcodes.length > 0) {
+
+            const savedBarcode = savedBarcodes[0];
+
+
+            // ==========================================
+            // Barcode ถูกใช้หรือถูกยกเลิกแล้ว
+            // ==========================================
+            if (savedBarcode.status !== "ACTIVE") {
+
+                return res.status(400).json({
+
+                    success: false,
+
+                    allowed: false,
+
+                    message: "Visitor barcode is expired or already used"
+
+                });
+            }
+
+
+            // ==========================================
+            // ตรวจวันหมดอายุ
+            // ==========================================
+            const [expired] = await database.query(
+                `SELECT id
+                 FROM Visitor_Barcodes
+                 WHERE id = ?
+                 AND expireDate <= CURRENT_TIMESTAMP
+                 LIMIT 1`,
+                [savedBarcode.id]
+            );
+
+
+            if (expired.length > 0) {
+
+                await database.query(
+                    `UPDATE Visitor_Barcodes
+                     SET status = 'EXPIRED'
+                     WHERE id = ?`,
+                    [savedBarcode.id]
+                );
+
+
+                return res.status(400).json({
+
+                    success: false,
+
+                    allowed: false,
+
+                    message: "Visitor barcode has expired"
+
+                });
+            }
+        }
+
+
+        // ==================================================
         // 3. หา Visitor ที่กำลังรอ Barcode ตอนเข้า
-        // ==========================================
+        // ==================================================
         const [visitors] = await database.query(
             `SELECT
                 id,
@@ -147,23 +240,30 @@ exports.visitorAccess = async (req, res) => {
              LIMIT 1`
         );
 
-        // ==========================================
+
+        // ==================================================
         // ไม่พบ Visitor ที่รอ Barcode
-        // ==========================================
+        // ==================================================
         if (visitors.length === 0) {
 
             return res.status(400).json({
+
                 success: false,
+
                 allowed: false,
+
                 message: "Barcode does not match visitor"
+
             });
         }
 
+
         const visitor = visitors[0];
 
-        // ==========================================
-        // 4. บันทึกเวลาเข้า + Barcode
-        // ==========================================
+
+        // ==================================================
+        // 4. บันทึก Barcode + เวลาเข้า
+        // ==================================================
         await database.query(
             `UPDATE Visitors
              SET barcode = ?,
@@ -176,18 +276,25 @@ exports.visitorAccess = async (req, res) => {
             ]
         );
 
-        // ==========================================
-        // 5. เก็บประวัติลง Visitor_Logs
-        // ==========================================
+
+        // ==================================================
+        // 5. บันทึก Visitor Log
+        // ==================================================
         await database.query(
             `INSERT INTO Visitor_Logs
-             (
-                 barcode,
-                 licenseplate,
-                 province,
-                 time_in
-             )
-             VALUES (?, ?, ?, CURRENT_TIMESTAMP)`,
+            (
+                barcode,
+                licenseplate,
+                province,
+                time_in
+            )
+            VALUES
+            (
+                ?,
+                ?,
+                ?,
+                CURRENT_TIMESTAMP
+            )`,
             [
                 barcode,
                 visitor.licenseplate,
@@ -195,15 +302,25 @@ exports.visitorAccess = async (req, res) => {
             ]
         );
 
-        // ==========================================
+
+        // ==================================================
         // 6. อนุญาตให้เข้า
-        // ==========================================
+        //
+        // Barcode ลูกบ้านยังคง ACTIVE
+        // เพื่อใช้ตอนออก
+        // ==================================================
         return res.json({
+
             success: true,
+
             allowed: true,
+
             action: "IN",
+
             message: "Visitor Entry Success"
+
         });
+
 
     } catch (error) {
 
@@ -211,9 +328,13 @@ exports.visitorAccess = async (req, res) => {
         console.error(error);
 
         return res.status(500).json({
+
             success: false,
+
             allowed: false,
+
             message: "Server Error"
+
         });
     }
 };

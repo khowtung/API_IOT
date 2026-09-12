@@ -5,6 +5,8 @@ const router = express.Router();
 const visitorController = require("../controllers/visitorController");
 
 
+// *ไอริน*
+
 // POST /api/access/visitor
 // กรณีเข้าของคนนอก
 // Body
@@ -48,6 +50,7 @@ const visitorController = require("../controllers/visitorController");
 //     ]
 // }
 // GET /api/visitor
+// ตัวนี้คือGetตัวที่ยังไม่ได้ออกคือตัวที่มันยังไม่ได้ลบอะ
 // Response
 // {
 //     "success": true,
