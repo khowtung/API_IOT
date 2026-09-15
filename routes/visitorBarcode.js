@@ -55,6 +55,9 @@ const visitorBarcodeController =
 //     "message": "Visitor barcode cancelled successfully"
 // }
 
+// GET /api/visitor-barcode
+// เอาข้อมู,ทั้งหมดเลยมีนขอ
+
 
 // ==========================================
 // สร้าง Barcode
@@ -80,6 +83,13 @@ router.get(
 router.delete(
     "/visitor-barcode/:barcode",
     visitorBarcodeController.cancelVisitorBarcode
+);
+
+
+// ดึงข้อมูล Barcode ทั้งหมด
+router.get(
+    "/visitor-barcode",
+    visitorBarcodeController.getAllVisitorBarcodes
 );
 
 

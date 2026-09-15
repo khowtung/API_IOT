@@ -310,3 +310,43 @@ exports.cancelVisitorBarcode = async (req, res) => {
         });
     }
 };
+
+
+
+// ==================================================
+// GET /api/visitor-barcode
+// ดึงข้อมูล Visitor_Barcodes ทั้งหมด
+// ==================================================
+exports.getAllVisitorBarcodes = async (req, res) => {
+
+    try {
+
+        const [rows] = await database.query(
+            `SELECT
+                id,
+                user_id,
+                houseNumber,
+                barcode,
+                expireDate,
+                status,
+                created_at
+             FROM Visitor_Barcodes
+             ORDER BY id DESC`
+        );
+
+        return res.json({
+            success: true,
+            data: rows
+        });
+
+    } catch (error) {
+
+        console.error("GET ALL VISITOR BARCODE ERROR");
+        console.error(error);
+
+        return res.status(500).json({
+            success: false,
+            message: "Server Error"
+        });
+    }
+};
