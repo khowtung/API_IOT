@@ -55,8 +55,32 @@ const visitorBarcodeController =
 //     "message": "Visitor barcode cancelled successfully"
 // }
 
+
 // GET /api/visitor-barcode
-// เอาข้อมู,ทั้งหมดเลยมีนขอ
+// เอาข้อมูลทั้งหมดเลยมีนขอ
+// {
+//     "success": true,
+//     "data": [
+//         {
+//             "id": 3,
+//             "user_id": 1,
+//             "houseNumber": "101",
+//             "barcode": "HOME003",
+//             "expireDate": "2026-09-16 15:30:00",
+//             "status": "ACTIVE",
+//             "created_at": "2026-09-15 15:30:00"
+//         },
+//         {
+//             "id": 2,
+//             "user_id": 2,
+//             "houseNumber": "102",
+//             "barcode": "HOME002",
+//             "expireDate": "2026-09-15 20:00:00",
+//             "status": "EXPIRED",
+//             "created_at": "2026-09-14 20:00:00"
+//         }
+//     ]
+// }
 
 
 // ==========================================
