@@ -11,6 +11,7 @@ const logRoutes = require("./routes/logs");
 const accessRoutes = require("./routes/access");
 const visitorRoutes = require("./routes/visitor");
 const visitorBarcodeRoutes = require("./routes/visitorBarcode");
+const generateKeyRoutes = require("./routes/generateKey");
 
 const app = express();
 const port = 4000;
@@ -18,6 +19,8 @@ const port = 4000;
 app.use(cors());
 app.use(express.json());
 
+
+app.use("/api", generateKeyRoutes);
 //นี่คือตัวดึงลงไปที่โฟเดอร์ชื่อroutesและไฟล์visitorbarcodeของพี่เกลโดยเฉพาะใช้สำหรับvisitorbarcode /
 app.use("/api", visitorBarcodeRoutes);
 //นี่คือตัวดึงลงไปที่โฟเดอร์ชื่อroutesและไฟล์visitorใช้สำหรับgetvisitorโดยเฉพาะ /
