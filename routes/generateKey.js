@@ -1,17 +1,16 @@
 const express = require("express");
 const router = express.Router();
 
-const generateKeyController =
-    require("../controllers/generateKeyController");
+const generateKeyController = require("../controllers/generateKeyController");
 
-// POST /api/generate-key
+// POST /api/createGenerateKey
 // body
 // {
 //     "key_gen": "ABC123",
 //     "state": "ACTIVE"
 // }
 
-// GET /api/generate-key
+// GET /api/generate-key/all
 // response
 // {
 //     "success": true,
@@ -35,14 +34,14 @@ const generateKeyController =
 
 // GET - ดูทั้งหมด
 router.get(
-    "/generate-key",
+    "/generate-key/all",
     generateKeyController.getGenerateKeys
 );
 
 
 // POST - สร้าง Key
 router.post(
-    "/generate-key",
+    "/createGenerateKey",
     generateKeyController.createGenerateKey
 );
 
