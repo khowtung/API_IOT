@@ -294,7 +294,7 @@ exports.updateAccount = async (req, res) => {
 
     try {
 
-        const userId = req.params.id;
+        const userId = req.params.user_id;
 
         const {
             username,
