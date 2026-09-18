@@ -2,7 +2,7 @@ const database = require("../database");
 
 
 // ==================================================
-// POST /api/generate-key
+// POST /api/createGenerateKey
 // รับ Key จากเพื่อน
 // ==================================================
 exports.createGenerateKey = async (req, res) => {

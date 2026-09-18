@@ -50,7 +50,7 @@ router.post(
 // PUT - เปลี่ยน State
 router.put(
     "/generate-key/:key_gen",
-    generateKeyController.updateGenerateKeyState
+    generateKeyController.deactivateGenerateKey
 );
 
 
