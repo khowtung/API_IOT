@@ -139,7 +139,7 @@ exports.createGenerateKey = async (req, res) => {
 
 
 // ==================================================
-// GET /api/generate-key
+// GET /api/generate-key/all
 // ดึงข้อมูลทั้งหมด
 // ==================================================
 exports.getGenerateKeys = async (req, res) => {
