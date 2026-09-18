@@ -27,7 +27,8 @@ const generateKeyController = require("../controllers/generateKeyController");
 // PUT /api/generate-key/:key_gen
 // body
 // {
-//     "state": "NON-ACTIVE"
+//     "state": "NON-ACTIVE",
+//     "houseNumber": "124001"
 // }
 
 
