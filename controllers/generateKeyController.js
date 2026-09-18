@@ -202,43 +202,43 @@ exports.getGenerateKeys = async (req, res) => {
 // PUT /api/generate-key/:key_gen
 // เปลี่ยน State
 // ==================================================
-exports.updateGenerateKeyState = async (req, res) => {
+exports.deactivateGenerateKey = async (req, res) => {
 
     try {
 
-        const { key_gen } = req.params;
+        const key_gen = req.params.key_gen;
 
-        const { state } = req.body;
+        const {
+            state,
+            houseNumber
+        } = req.body;
 
-
-        // ==========================================
-        // ตรวจ State
-        // ==========================================
+        // ต้องส่ง state
         if (!state) {
-
             return res.status(400).json({
                 success: false,
                 message: "state is required"
             });
         }
 
-
-        if (
-            state !== "ACTIVE" &&
-            state !== "NON-ACTIVE"
-        ) {
-
+        // PUT นี้อนุญาตเฉพาะ NON-ACTIVE
+        if (state !== "NON-ACTIVE") {
             return res.status(400).json({
                 success: false,
-                message: "state must be ACTIVE or NON-ACTIVE"
+                message: "state must be NON-ACTIVE"
             });
         }
 
+        // ต้องมี houseNumber
+        if (!houseNumber) {
+            return res.status(400).json({
+                success: false,
+                message: "houseNumber is required"
+            });
+        }
 
-        // ==========================================
-        // ตรวจ Key
-        // ==========================================
-        const [existingKey] = await database.query(
+        // ตรวจว่ามี key นี้ไหม
+        const [rows] = await database.query(
             `SELECT id
              FROM Generate_Keys
              WHERE key_gen = ?
@@ -246,63 +246,48 @@ exports.updateGenerateKeyState = async (req, res) => {
             [key_gen]
         );
 
-
-        if (existingKey.length === 0) {
-
+        if (rows.length === 0) {
             return res.status(404).json({
                 success: false,
-                message: "Generate key not found"
+                message: "Key not found"
             });
         }
 
-
-        // ==========================================
-        // เปลี่ยน State
-        // ==========================================
+        // เปลี่ยนเป็น NON-ACTIVE + บันทึกบ้านเลขที่
         await database.query(
             `UPDATE Generate_Keys
-             SET state = ?
+             SET state = ?,
+                 houseNumber = ?
              WHERE key_gen = ?`,
             [
                 state,
+                houseNumber,
                 key_gen
             ]
         );
 
-
-        // ==========================================
-        // ดึงข้อมูลล่าสุด
-        // ==========================================
-        const [rows] = await database.query(
+        // ดึงข้อมูลล่าสุดกลับมา
+        const [result] = await database.query(
             `SELECT
                 id,
                 key_gen,
                 state,
-                DATE_FORMAT(
-                    timestamp,
-                    '%d/%m/%Y %H:%i:%s'
-                ) AS timestamp
+                houseNumber,
+                DATE_FORMAT(timestamp, '%d/%m/%Y %H:%i:%s') AS timestamp
              FROM Generate_Keys
-             WHERE key_gen = ?
-             LIMIT 1`,
+             WHERE key_gen = ?`,
             [key_gen]
         );
 
-
         return res.json({
-
             success: true,
-
-            message: "Generate key state updated successfully",
-
-            data: rows[0]
-
+            message: "Key deactivated successfully",
+            data: result[0]
         });
-
 
     } catch (error) {
 
-        console.error("UPDATE GENERATE KEY ERROR");
+        console.error("DEACTIVATE GENERATE KEY ERROR");
         console.error(error);
 
         return res.status(500).json({
