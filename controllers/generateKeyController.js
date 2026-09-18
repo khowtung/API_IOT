@@ -166,6 +166,7 @@ exports.getGenerateKeys = async (req, res) => {
                 id,
                 key_gen,
                 state,
+                houseNumber,
                 DATE_FORMAT(
                     timestamp,
                     '%d/%m/%Y %H:%i:%s'
