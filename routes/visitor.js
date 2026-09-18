@@ -37,17 +37,13 @@ const visitorController = require("../controllers/visitorController");
 // GET /api/access/visitor/logs
 // Response
 // {
-//     "success": true,
-//     "data": [
-//         {
-//             "id": 1,
-//             "barcode": "VIS001",
-//             "licenseplate": "กข12",
-//             "province": "ลำพูน",
-//             "time_in": "03/09/2026 15:20:10",
-//             "time_out": "03/09/2026 17:30:22"
-//         }
-//     ]
+//     "id": 1,
+//     "barcode": "VIS001",
+//     "houseNumber": "124001", ถ้ามีก็จะโชว์ถ้าไม่มีก็จะเป็นnull
+//     "licenseplate": "กข12",
+//     "province": "ลำพูน",
+//     "time_in": "03/09/2026 15:20:10",
+//     "time_out": "03/09/2026 17:30:22"
 // }
 // GET /api/visitor
 // ตัวนี้คือGetตัวที่ยังไม่ได้ออกคือตัวที่มันยังไม่ได้ลบอะ

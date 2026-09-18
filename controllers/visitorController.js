@@ -349,15 +349,31 @@ exports.getVisitorLogs = async (req, res) => {
     try {
 
         const [rows] = await database.query(
+
             `SELECT
-                id,
-                barcode,
-                licenseplate,
-                province,
-                DATE_FORMAT(time_in, '%d/%m/%Y %H:%i:%s') AS time_in,
-                DATE_FORMAT(time_out, '%d/%m/%Y %H:%i:%s') AS time_out
-             FROM Visitor_Logs
-             ORDER BY id DESC`
+                vl.id,
+                vl.barcode,
+                vb.houseNumber,
+                vl.licenseplate,
+                vl.province,
+
+                DATE_FORMAT(
+                    vl.time_in,
+                    '%d/%m/%Y %H:%i:%s'
+                ) AS time_in,
+
+                DATE_FORMAT(
+                    vl.time_out,
+                    '%d/%m/%Y %H:%i:%s'
+                ) AS time_out
+
+             FROM Visitor_Logs vl
+
+             LEFT JOIN Visitor_Barcodes vb
+                ON vl.barcode = vb.barcode
+
+             ORDER BY vl.id DESC`
+
         );
 
         return res.json({
